@@ -1,8 +1,6 @@
 //ViewSuperAdminUsersPage.tsx 
 import React from 'react';
-
-
-import { useNavigate } from 'react-router-dom';
+import { useNavigate , useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
 
@@ -36,7 +34,10 @@ const ViewSuperAdminUsersPage = () => {
     userId: null,
   });
 
-  const [currentPage, setCurrentPage] = useState(1); // Track the current page
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pageFromQuery = parseInt(searchParams.get('page') || '1', 10);
+  const [currentPage, setCurrentPage] = useState<number>(pageFromQuery);
   const [totalPages, setTotalPages] = useState(1); // Total pages for pagination
   const perPage = 10;
 
@@ -45,25 +46,28 @@ const ViewSuperAdminUsersPage = () => {
       try {
         const res = await axios.get(`http://localhost:8000/api/superadmin/users`, {
           params: {
-            page: currentPage,
-            per_page: perPage, // Send per_page parameter to the backend
+            page: pageFromQuery,
+            per_page: perPage,
           },
           withCredentials: true,
         });
-        setUsers(res.data.users.data); // Access paginated data array
-        setTotalPages(res.data.users.last_page); // Set total pages from the response
+        setUsers(res.data.users.data);
+        setTotalPages(res.data.users.last_page);
       } catch (error) {
         console.error('Error fetching users:', error);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchUsers();
-  }, [currentPage]); // Re-fetch when currentPage changes
+    setCurrentPage(pageFromQuery); // Keep internal state in sync
+  }, [pageFromQuery]);
+  
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page); // Update the current page
+    setCurrentPage(page);
+    setSearchParams({ page: page.toString() }); // Sync with URL
   };
 
   const handleDelete = async (id: number) => {
