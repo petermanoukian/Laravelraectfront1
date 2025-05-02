@@ -1,7 +1,70 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode ,  useState } from 'react';
 import UserStatus from '@/components/superadmin/UserStatus';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+
+import SidebarMenuLeftSuperAdmin, { MenuSection } from '@/components/superadmin/SidebarMenuLeftSuperAdmin';
+
+
+import { ChevronDown, ChevronUp } from 'lucide-react'
+
+
+
+
+const menuSections: MenuSection[] = [
+  {
+    title: 'Users', // Change title to Users
+    items: [
+      { label: 'View Users', to: '/superadmin/users' },  // View Users
+      { label: 'Add User', to: '/superadmin/users/add' },  // Add User
+    ],
+  },
+  {
+    title: 'Admin',
+    items: [
+      { label: 'Dashboard', to: '/admin/dashboard' },
+      { label: 'Users', to: '/admin/users' },
+    ],
+  },
+
+  
+  {
+    title: 'Reports', // New section
+    items: [
+      { label: 'Sales Report', to: '/reports/sales' },
+      { label: 'User Activity', to: '/reports/activity' },
+    ],
+  },
+
+];
+
+
+
+
 const DashboardSuperAdminLayout = ({ children }: { children: ReactNode }) => {
+
+  
+  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({});
+
+
+
+  const setOpenSectionForRoute = (title: string) => {
+    setOpenSections((prev) => {
+      if (prev[title]) return prev; // already open
+      return {
+        ...Object.keys(prev).reduce((acc, key) => ({ ...acc, [key]: false }), {}),
+        [title]: true,
+      };
+    });
+  };
+  
+  const toggleSection = (title: string) => {
+    setOpenSections((prev) => ({
+      ...Object.keys(prev).reduce((acc, key) => ({ ...acc, [key]: false }), {}),
+      [title]: !prev[title],
+    }));
+  };
+  
+  
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
@@ -12,13 +75,12 @@ const DashboardSuperAdminLayout = ({ children }: { children: ReactNode }) => {
                 {/* Left side: title */}
                 <div className="w-1/2">
                 <h1 className="text-xl font-bold text-gray-800">
-                <NavLink
-                        to="/"
-                        className={({ isActive }) =>
-                            isActive ? 'text-green-600 font-bold' : 'text-gray-600 hover:text-green-500'
-                        }
-                        >
-                        Home
+                <NavLink to="/superadmin"
+                  className={({ isActive }) =>
+                            isActive ? 'text-blue-600 font-bold' : 'text-gray-600 hover:text-green-500'
+                  }
+                >
+                Home
                </NavLink>
 
                 </h1>
@@ -35,15 +97,22 @@ const DashboardSuperAdminLayout = ({ children }: { children: ReactNode }) => {
       <div className="flex flex-1">
         {/* Sidebar */}
         <aside className="w-64 bg-white shadow-md p-4">
-          <nav className="space-y-2">
-            <a href="#" className="block p-2 rounded hover:bg-gray-100">Dashboard</a>
-            <a href="#" className="block p-2 rounded hover:bg-gray-100">Users</a>
-            <a href="#" className="block p-2 rounded hover:bg-gray-100">Settings</a>
-          </nav>
+
+
+ 
+
+        <SidebarMenuLeftSuperAdmin
+          menuSections={menuSections}
+          openSections={openSections}
+          toggleSection={toggleSection}
+          setOpenSectionForRoute={setOpenSectionForRoute}
+        />
+
         </aside>
 
         {/* Main Content */}
         <main className="flex-1 bg-gray-50 p-6 overflow-y-auto">
+          
           {children}
         </main>
       </div>

@@ -1,5 +1,4 @@
-//AuthContext.tsx
-
+// src/contexts/AuthContext.tsx
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 
@@ -14,33 +13,59 @@ type AuthContextType = {
   user: User | null;
   setUser: (user: User | null) => void;
   isAuthenticated: boolean;
-  loading: boolean; // Add loading state here
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true); // Initialize loading state to true
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    const userData = localStorage.getItem('authUser') || sessionStorage.getItem('authUser');
 
-    if (token && userData) {
+    if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(JSON.parse(userData));
-    }
 
-    // Once the check is complete, set loading to false
-    setLoading(false);
+      axios
+        .get('http://localhost:8000/api/user', { withCredentials: true })
+        .then(res => {
+          // Extract first role from Spatie response
+          const role = res.data.roles?.[0]?.name ?? 'user';
+
+          const authUser: User = {
+            id: res.data.id,
+            name: res.data.name,
+            email: res.data.email,
+            role: role as User['role'],
+          };
+
+          setUser(authUser);
+
+          // Optionally update storage with refreshed user info
+          localStorage.setItem('authUser', JSON.stringify(authUser));
+        })
+        .catch(err => {
+          console.error('Failed to fetch authenticated user:', err);
+          setUser(null);
+          localStorage.removeItem('authUser');
+          localStorage.removeItem('authToken');
+          delete axios.defaults.headers.common['Authorization'];
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const value = {
     user,
     setUser,
     isAuthenticated: !!user,
-    loading, // Add loading state to context
+    loading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
