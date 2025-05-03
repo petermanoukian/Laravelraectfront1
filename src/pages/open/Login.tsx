@@ -1,6 +1,6 @@
 // src/pages/Login.tsx
 import { useState , useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../lib/axios';
 import { useNavigate } from 'react-router-dom';
 import GuestLayout from '../../layouts/GuestLayout';
 import { useAuth } from '../../contexts/AuthContext';
@@ -32,7 +32,7 @@ function Login() {
     setError(null);
   
     try {
-      const response = await axios.post('http://localhost:8000/api/login', {
+      const response = await axiosInstance.post('/login', {
         email,
         password,
       }, {
@@ -55,7 +55,7 @@ function Login() {
 
       const storedToken = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
       if (storedToken) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
       }
 
      

@@ -3,7 +3,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import axios from 'axios';
+import axiosInstance from '../../lib/axios';
 import { NavLink } from 'react-router-dom';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
@@ -15,7 +15,7 @@ const UserStatus: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:8000/api/logout', {}, { withCredentials: true });
+      await axiosInstance.post('/logout', {}, { withCredentials: true });
       localStorage.removeItem('authToken');
       sessionStorage.removeItem('authToken');
       setUser(null);

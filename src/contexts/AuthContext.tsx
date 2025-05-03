@@ -1,6 +1,6 @@
 // src/contexts/AuthContext.tsx
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import axios from 'axios';
+import axiosInstance from '../lib/axios';
 
 type User = {
   id: number;
@@ -26,10 +26,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      axios
-        .get('http://localhost:8000/api/user', { withCredentials: true })
+      axiosInstance
+        .get('/user', { withCredentials: true })
         .then(res => {
           // Extract first role from Spatie response
           const role = res.data.roles?.[0]?.name ?? 'user';
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(null);
           localStorage.removeItem('authUser');
           localStorage.removeItem('authToken');
-          delete axios.defaults.headers.common['Authorization'];
+          delete axiosInstance.defaults.headers.common['Authorization'];
         })
         .finally(() => {
           setLoading(false);

@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import axios from 'axios';
+import axiosInstance from '../../lib/axios';
 import DashboardSuperAdminLayout from '../../layouts/DashboardSuperAdminLayout';
 
 const SuperadminPage = () => {
@@ -11,7 +11,7 @@ const SuperadminPage = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post('http://localhost:8000/api/logout', {}, { withCredentials: true });
+      await axiosInstance.post('/logout', {}, { withCredentials: true });
       localStorage.removeItem('authToken'); // Clear token from localStorage
       sessionStorage.removeItem('authToken'); // Clear token from sessionStorage
       setUser(null); // Clear user state

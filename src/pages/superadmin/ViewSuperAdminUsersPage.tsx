@@ -2,12 +2,15 @@
 import React from 'react';
 import { useNavigate , useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import axios from 'axios';
+import axiosInstance from '../../lib/axios';
 
 import { useEffect, useState } from 'react';
 import DashboardSuperAdminLayout from '../../layouts/DashboardSuperAdminLayout';
 import { NavLink } from 'react-router-dom';
 import Pagination from '../../components/Pagination';
+import UserFilterControls from '../../components/superadmin/UserFilterControls';
+import UserTableRow from '../../components/superadmin/UserTableRow';
+
 
 type Role = {
   name: string;
@@ -40,14 +43,26 @@ const ViewSuperAdminUsersPage = () => {
   const [currentPage, setCurrentPage] = useState<number>(pageFromQuery);
   const [totalPages, setTotalPages] = useState(1); // Total pages for pagination
   const perPage = 10;
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const [roleFilter, setRoleFilter] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [sortField, setSortField] = useState('id');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await axios.get(`http://localhost:8000/api/superadmin/users`, {
+        const res = await axiosInstance.get(`/superadmin/users`, {
           params: {
             page: pageFromQuery,
             per_page: perPage,
+            role: roleFilter,
+            search: debouncedSearchTerm,
+            sort_by: sortField,
+            sort_direction: sortDirection,
           },
           withCredentials: true,
         });
@@ -59,27 +74,35 @@ const ViewSuperAdminUsersPage = () => {
         setLoading(false);
       }
     };
-  
+
     fetchUsers();
-    setCurrentPage(pageFromQuery); // Keep internal state in sync
-  }, [pageFromQuery]);
-  
+    setCurrentPage(pageFromQuery);
+  }, [pageFromQuery, refreshKey, roleFilter, debouncedSearchTerm, sortField, sortDirection]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (searchTerm.length >= 2 || searchTerm === '') {
+        setDebouncedSearchTerm(searchTerm);
+      }
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    setSearchParams({ page: page.toString() }); // Sync with URL
+    setSearchParams({ page: page.toString() });
   };
 
   const handleDelete = async (id: number) => {
     try {
-      await axios.delete(`http://localhost:8000/api/superadmin/userdelete/${id}`, {
+      await axiosInstance.delete(`/superadmin/userdelete/${id}`, {
         withCredentials: true,
       });
-      setUsers(users.filter((user) => user.id !== id)); // Remove deleted user from the list
-      setDeleteConfirmation({ show: false, userId: null }); // Close the confirmation dialog
+      setUsers(users.filter((user) => user.id !== id));
+      setDeleteConfirmation({ show: false, userId: null });
+      setRefreshKey((prev) => prev + 1);
     } catch (error) {
       console.error('Error deleting user:', error);
-      // You could also display an error message to the user here
     }
   };
 
@@ -90,7 +113,6 @@ const ViewSuperAdminUsersPage = () => {
   const cancelDelete = () => {
     setDeleteConfirmation({ show: false, userId: null });
   };
-
 
 
 
@@ -109,6 +131,22 @@ const ViewSuperAdminUsersPage = () => {
     <DashboardSuperAdminLayout>
      
     <p> Welcome {user.name} {user.id}  {user.role} </p>
+
+
+    <UserFilterControls
+        roleFilter={roleFilter}
+        setRoleFilter={setRoleFilter}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        sortField={sortField}
+        setSortField={setSortField}
+        sortDirection={sortDirection}
+        setSortDirection={setSortDirection}
+      />
+
+
+
+
     <div className="p-6">
       <h2 className="text-xl font-bold mb-4">All Users</h2>
       <table className="min-w-full border">
@@ -123,28 +161,12 @@ const ViewSuperAdminUsersPage = () => {
         </thead>
         <tbody>
           {users.map((userx: User) => (
-            <tr key={userx.id} className="hover:bg-gray-50">
-              <td className="border px-4 py-2">{userx.id}</td>
-              <td className="border px-4 py-2">{userx.name}</td>
-              <td className="border px-4 py-2">{userx.email}</td>
-              <td className="border px-4 py-2">{userx.roles[0]?.name || 'N/A'}</td>
-              <td className="border px-4 py-2 space-x-2">
-                <NavLink to={`/superadmin/users/${userx.id}/edit`}
-                className="cursor bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 
-                
-                rounded text-sm">
-                  Edit
-                </NavLink>
-                {userx.id !== user?.id && (
-                      <button
-                      onClick={() => confirmDelete(userx.id)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
-                    >
-                      Delete
-                    </button>
-                  )}
-              </td>
-            </tr>
+            <UserTableRow
+              key={userx.id}
+              user={userx}
+              currentUserId={user?.id}
+              onDeleteConfirm={confirmDelete}
+            />
           ))}
         </tbody>
       </table>
