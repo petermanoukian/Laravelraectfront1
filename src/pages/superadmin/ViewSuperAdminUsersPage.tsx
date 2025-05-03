@@ -10,7 +10,7 @@ import { NavLink } from 'react-router-dom';
 import Pagination from '../../components/Pagination';
 import UserFilterControls from '../../components/superadmin/UserFilterControls';
 import UserTableRow from '../../components/superadmin/UserTableRow';
-
+import UserTableHeader from '../../components/superadmin/UserTableHeader';
 
 type Role = {
   name: string;
@@ -39,8 +39,9 @@ const ViewSuperAdminUsersPage = () => {
 
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const pageFromQuery = parseInt(searchParams.get('page') || '1', 10);
-  const [currentPage, setCurrentPage] = useState<number>(pageFromQuery);
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
   const [totalPages, setTotalPages] = useState(1); // Total pages for pagination
   const perPage = 10;
   const [refreshKey, setRefreshKey] = useState(0);
@@ -49,23 +50,42 @@ const ViewSuperAdminUsersPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [sortField, setSortField] = useState('id');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
 
 
   useEffect(() => {
+    const pageParam = searchParams.get('page');
+    const parsedPage = pageParam ? parseInt(pageParam, 10) : 1;
+  
+    // Only update if parsed page is valid and different from current state
+    if (!isNaN(parsedPage) && parsedPage !== currentPage) {
+      setCurrentPage(parsedPage);
+    }
+  }, [searchParams, currentPage]); // make sure currentPage is in deps
+  
+
+
+  
+
+
+
+  useEffect(() => {
+    console.log('🔥 fetchUsers useEffect triggered');
     const fetchUsers = async () => {
       try {
         const res = await axiosInstance.get(`/superadmin/users`, {
           params: {
-            page: pageFromQuery,
+            page: currentPage,
             per_page: perPage,
             role: roleFilter,
             search: debouncedSearchTerm,
-            sort_by: sortField,
-            sort_direction: sortDirection,
+            sortField: sortField,
+            sortDirection: sortDirection,
           },
           withCredentials: true,
         });
+
         setUsers(res.data.users.data);
         setTotalPages(res.data.users.last_page);
       } catch (error) {
@@ -74,11 +94,17 @@ const ViewSuperAdminUsersPage = () => {
         setLoading(false);
       }
     };
+  
+   
+      fetchUsers();
+    
+  }, [currentPage, refreshKey, roleFilter, debouncedSearchTerm, sortField, sortDirection]);
+  
+  
 
-    fetchUsers();
-    setCurrentPage(pageFromQuery);
-  }, [pageFromQuery, refreshKey, roleFilter, debouncedSearchTerm, sortField, sortDirection]);
+   
 
+  
   useEffect(() => {
     const handler = setTimeout(() => {
       if (searchTerm.length >= 2 || searchTerm === '') {
@@ -89,9 +115,12 @@ const ViewSuperAdminUsersPage = () => {
   }, [searchTerm]);
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    setSearchParams({ page: page.toString() });
+    if (page !== currentPage) {
+      setCurrentPage(page);
+      setSearchParams({ page: page.toString() });
+    }
   };
+  
 
   const handleDelete = async (id: number) => {
     try {
@@ -134,15 +163,11 @@ const ViewSuperAdminUsersPage = () => {
 
 
     <UserFilterControls
-        roleFilter={roleFilter}
-        setRoleFilter={setRoleFilter}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        sortField={sortField}
-        setSortField={setSortField}
-        sortDirection={sortDirection}
-        setSortDirection={setSortDirection}
-      />
+      roleFilter={roleFilter}
+      setRoleFilter={setRoleFilter}
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
+    />
 
 
 
@@ -150,15 +175,14 @@ const ViewSuperAdminUsersPage = () => {
     <div className="p-6">
       <h2 className="text-xl font-bold mb-4">All Users</h2>
       <table className="min-w-full border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border px-4 py-2 text-left">ID</th>
-            <th className="border px-4 py-2 text-left">Name</th>
-            <th className="border px-4 py-2 text-left">Email</th>
-            <th className="border px-4 py-2 text-left">Role</th>
-            <th className="border px-4 py-2 text-left">Actions</th>
-          </tr>
-        </thead>
+
+      <UserTableHeader
+          sortField={sortField}
+          sortDirection={sortDirection}
+          setSortField={setSortField}
+          setSortDirection={setSortDirection}
+        />
+
         <tbody>
           {users.map((userx: User) => (
             <UserTableRow

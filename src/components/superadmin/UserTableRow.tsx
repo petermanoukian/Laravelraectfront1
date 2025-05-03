@@ -21,7 +21,9 @@ type Props = {
   onDeleteConfirm: (userId: number) => void;
 };
 
-const UserTableRow: React.FC<Props> = ({ user, currentUserId, onDeleteConfirm }) => {
+const UserTableRow = ({ user, currentUserId, onDeleteConfirm }: { user: User, currentUserId: number | undefined, onDeleteConfirm: Function }) => {
+ 
+
   return (
     <tr className="hover:bg-gray-50">
       <td className="border px-4 py-2">{user.id}</td>
