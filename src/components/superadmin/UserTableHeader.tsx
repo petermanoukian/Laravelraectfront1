@@ -6,6 +6,8 @@ type Props = {
   sortDirection: 'asc' | 'desc';
   setSortField: (field: string) => void;
   setSortDirection: (dir: 'asc' | 'desc') => void;
+  allSelected?: boolean;
+  onToggleSelectAll?: () => void;
 };
 
 const UserTableHeader: React.FC<Props> = ({
@@ -13,6 +15,8 @@ const UserTableHeader: React.FC<Props> = ({
   sortDirection,
   setSortField,
   setSortDirection,
+  allSelected,
+  onToggleSelectAll,
 }) => {
   const handleSort = (field: string) => {
     if (field === sortField) {
@@ -37,6 +41,15 @@ const UserTableHeader: React.FC<Props> = ({
   return (
     <thead>
       <tr className="bg-gray-100">
+
+      <th className="border px-4 py-2">
+      <input
+        type="checkbox"
+        checked={allSelected ?? false}
+        onChange={onToggleSelectAll}
+      />
+    </th>
+
         {['id', 'name', 'email', 'role'].map((field) => (
           <th
             key={field}

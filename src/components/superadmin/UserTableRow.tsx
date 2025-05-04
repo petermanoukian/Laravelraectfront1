@@ -12,24 +12,50 @@ type User = {
   id: number;
   name: string;
   email: string;
-  roles: Role[];
+  role: string; // ✅ Assuming one role per user
 };
 
 type Props = {
   user: User;
-  currentUserId: number;
+  currentUserId?: number;
+  currentUserRole?: string;
   onDeleteConfirm: (userId: number) => void;
+  isSelected: boolean;
+  onToggleSelect: (userId: number) => void;
 };
 
-const UserTableRow = ({ user, currentUserId, onDeleteConfirm }: { user: User, currentUserId: number | undefined, onDeleteConfirm: Function }) => {
- 
+const UserTableRow: React.FC<Props> = (props) => {
+  const {
+    user,
+    currentUserId,
+    currentUserRole,
+    onDeleteConfirm,
+    isSelected,
+    onToggleSelect,
+  } = props;
+
+  const canDelete =
+    currentUserRole === 'superadmin' && currentUserId !== user.id; 
 
   return (
     <tr className="hover:bg-gray-50">
+       <td className="text-center border" >
+        {canDelete && (
+          <input
+            type="checkbox"
+            checked={isSelected}
+            onChange={() => onToggleSelect(user.id)}
+            className=" mr-2 "
+          />
+        )}
+      </td>
       <td className="border px-4 py-2">{user.id}</td>
       <td className="border px-4 py-2">{user.name}</td>
       <td className="border px-4 py-2">{user.email}</td>
-      <td className="border px-4 py-2">{user.roles[0]?.name || 'N/A'}</td>
+      <td className="border px-4 py-2">
+      {user.roles.length > 0 ? user.roles[0].name : 'No role assigned'}
+
+        </td>
       <td className="border px-4 py-2 space-x-2">
         <NavLink
           to={`/superadmin/users/${user.id}/edit`}
@@ -37,7 +63,7 @@ const UserTableRow = ({ user, currentUserId, onDeleteConfirm }: { user: User, cu
         >
           Edit
         </NavLink>
-        {user.id !== currentUserId && (
+        {canDelete && (
           <button
             onClick={() => onDeleteConfirm(user.id)}
             className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
