@@ -242,7 +242,7 @@ const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
           handlePdfFile(files[0]); 
         }
       }
-      setErrors(prev => ({ ...prev, [name]: [] })); 
+      setErrors({}); 
       setButtonDisabled(false); 
 
 

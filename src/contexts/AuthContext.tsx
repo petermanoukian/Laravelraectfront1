@@ -7,6 +7,8 @@ type User = {
   name: string;
   email: string;
   role: 'superadmin' | 'admin' | 'user';
+  img?: string | null;
+  pdf?: string | null;
 };
 
 type AuthContextType = {
