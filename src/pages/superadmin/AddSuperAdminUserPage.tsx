@@ -1,3 +1,4 @@
+//AddSuperAdminUserPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -6,16 +7,13 @@ import { useEffect, useRef } from 'react';
 import DashboardSuperAdminLayout from '../../layouts/DashboardSuperAdminLayout';
 import { NavLink } from 'react-router-dom';
 
-
-
 const AddSuperAdminUserPage = () => {
 
+const debounceRef = useRef<number | null>(null);
+const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
+const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
+const { user, setUser, isAuthenticated } = useAuth();
 
-  const debounceRef = useRef<number | null>(null);
-  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
-  const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
-
-  const { user, setUser, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -26,19 +24,18 @@ const AddSuperAdminUserPage = () => {
   });
 
   const [role, setRole] = useState<string>(''); 
-
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [img, setImg] = useState<File | null>(null);
   const [pdf, setPdf] = useState<File | null>(null);
-
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null); 
+  const [pdfPreviewType, setPdfPreviewType] = useState<string | null>(null); // NEW: store MIME type
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({}); 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-
-
 
   const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const roleValue = e.target.value;
@@ -49,6 +46,9 @@ const AddSuperAdminUserPage = () => {
       ...formData,
       role: roleValue,
     });
+
+    setButtonDisabled(false); 
+    
   };
   
   
@@ -69,26 +69,64 @@ const AddSuperAdminUserPage = () => {
       ...formData,
       [name]: value,
     });
+
+    setButtonDisabled(false); 
+    setErrors({}); // Clear errors when user starts typing
   };
   
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, files } = e.target;
   
-    if (files && files[0]) {
-      if (name === 'img') {
-        setImg(files[0]); // Explicitly set the 'img' state
-      } else if (name === 'pdf') {
-        setPdf(files[0]); // Explicitly set the 'pdf' state
-      }
-      
-      // Update formData with the new file
+    const handleImageFile = (file: File) => {
+      setImg(file); 
+      setImagePreviewUrl(URL.createObjectURL(file)); 
       setFormData({
         ...formData,
-        [name]: files[0],
-      });
-    }
-  };
+        img: file,
+      }); 
+      
+    }; 
+
+    
+    const handlePdfFile = (file: File) => {
+      setPdf(file); 
+      setFormData({
+        ...formData,
+        pdf: file, 
+      }); 
+
+      const url = URL.createObjectURL(file);
+      const type = file.type;
+  
+      if (
+        type === 'application/pdf' ||
+        type.startsWith('image/') ||
+        type === 'text/plain' ||
+        type === 'application/msword' ||
+        type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ) {
+        setPdfPreviewUrl(url);
+        setPdfPreviewType(type); // NEW: store MIME type
+      } else {
+        setPdfPreviewUrl(null);
+        setPdfPreviewType(null);
+      }
+
+    }; 
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, files } = e.target;
+
+      if (files && files[0]) {
+        if (name === 'img') {
+          handleImageFile(files[0]); 
+        } else if (name === 'pdf') {
+          handlePdfFile(files[0]); 
+        }
+      }
+ 
+      setButtonDisabled(false); 
+    };
+
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,7 +150,7 @@ const AddSuperAdminUserPage = () => {
     if (formData.img) {
       const allowedImgTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/webp'];
       if (!allowedImgTypes.includes(formData.img.type)) newErrors.img = ['Invalid image file type.'];
-      else if (formData.img.size > 2 * 1024 * 1024) newErrors.img = ['Image must be under 2MB.'];
+      else if (formData.img.size > 9 * 1024 * 1024) newErrors.img = ['Image must be under 9MB.'];
     }
   
     if (formData.pdf) {
@@ -127,7 +165,7 @@ const AddSuperAdminUserPage = () => {
         'image/gif',
       ];
       if (!allowedPdfTypes.includes(formData.pdf.type)) newErrors.pdf = ['Invalid file type.'];
-      else if (formData.pdf.size > 5 * 1024 * 1024) newErrors.pdf = ['File must be under 5MB.'];
+      else if (formData.pdf.size > 9  * 1024 * 1024) newErrors.pdf = ['File must be under 9MB.'];
     }
   
     // If any frontend errors, stop here
@@ -180,7 +218,7 @@ const AddSuperAdminUserPage = () => {
   return (
     <DashboardSuperAdminLayout>
 
-<div className="w-full p-3 bg-gray-100 mb-4">
+    <div className="w-full p-3 bg-gray-100 mb-4">
     <p className = "mt-3 block"> Welcome {user?.name} {user?.id}  {user?.role} </p>
     <p className = "mt-3 block text-sm">
     <NavLink to="/superadmin/users" className="text-blue-500 hover:underline font-bold text-sm">
@@ -273,7 +311,8 @@ const AddSuperAdminUserPage = () => {
             <div>
               <label>Password:</label>
               <input
-                className="bg-gray-100 border border-gray-200 rounded py-1 px-3 block focus:ring-blue-500 focus:border-blue-500 text-gray-700 w-full"
+                className="bg-gray-100 border border-gray-200 rounded py-1 px-3 block focus:ring-blue-500 
+                focus:border-blue-500 text-gray-700 w-full"
                 type="password" required
                 name="password"
                 value={formData.password}
@@ -287,8 +326,21 @@ const AddSuperAdminUserPage = () => {
                 type="file"
                 name="img"
                 onChange={handleFileChange}
-                className="bg-gray-100 border border-gray-200 rounded-lg block w-full text-sm text-gray-500 file:me-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:disabled:opacity-50 file:disabled:pointer-events-none dark:text-neutral-500 dark:file:bg-blue-500 dark:hover:file:bg-blue-400"
+                className="bg-gray-100 border border-gray-200 rounded-lg block w-full text-sm text-gray-500 
+                file:me-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold 
+                file:bg-blue-600 file:text-white hover:file:bg-blue-700 
+                file:disabled:opacity-50 file:disabled:pointer-events-none 
+                dark:text-neutral-500 dark:file:bg-blue-500 dark:hover:file:bg-blue-400"
               />
+
+              {imagePreviewUrl && (
+                <div className="mt-4"> 
+                  <img src={imagePreviewUrl} alt="Preview" className="h-24 rounded shadow" />
+                </div>
+              )}
+
+
+
               {errors.img && <p className="text-red-500 text-sm">{errors.img[0]}</p>}
             </div>
             <div>
@@ -297,8 +349,29 @@ const AddSuperAdminUserPage = () => {
                 type="file"
                 name="pdf"
                 onChange={handleFileChange}
-                className="bg-gray-100 block w-full border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 file:bg-gray-50 file:border-0 file:me-4 file:py-3 file:px-4 dark:file:bg-neutral-700 dark:file:text-neutral-400"
+                className="bg-gray-100 block w-full border border-gray-200 shadow-sm rounded-lg text-sm 
+                focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 
+                disabled:pointer-events-none dark:bg-neutral-900 
+                dark:border-neutral-700 dark:text-neutral-400 
+                file:bg-gray-50 file:border-0 file:me-4 file:py-3 file:px-4 
+                sdark:file:bg-neutral-700 dark:file:text-neutral-400"
               />
+
+              {pdfPreviewUrl && pdfPreviewType && (
+                <div className="mt-4">
+                  {pdfPreviewType === 'application/pdf' ? (
+                    <embed src={pdfPreviewUrl} type="application/pdf" width="100%" height="120px" />
+                  ) : pdfPreviewType.startsWith('image/') ? (
+                    <img src={pdfPreviewUrl} alt="Image Preview" className="h-24 rounded shadow" />
+                  ) : pdfPreviewType === 'text/plain' ? (
+                    <iframe src={pdfPreviewUrl} width="100%" height="120px" />
+                  ) : null}
+                </div>
+              )}
+
+  
+
+
               {errors.pdf && <p className="text-red-500 text-sm">{errors.pdf[0]}</p>}
             </div>
             <div className="space-x-4 mt-8">

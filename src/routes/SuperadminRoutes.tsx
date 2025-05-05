@@ -3,7 +3,7 @@ import SuperadminPage from "@/pages/superadmin";
 import ProtectedRouteSuper from "@/components/ProtectedRouteSuper";
 import ViewSuperAdminUsersPage from "@/pages/superadmin/ViewSuperAdminUsersPage";
 import AddSuperAdminUserPage from "@/pages/superadmin/AddSuperAdminUserPage";
-
+import EditSuperAdminUserPage from "@/pages/superadmin/EditSuperAdminUserPage";
 const SuperadminRoutes = [
   <Route
     key="superadmin"
@@ -33,6 +33,16 @@ const SuperadminRoutes = [
       </ProtectedRouteSuper>
     }
   />,
+
+  <Route
+  key="edit-superadmin-user"
+  path="/superadmin/users/edit/:userId"
+  element={
+    <ProtectedRouteSuper>
+      <EditSuperAdminUserPage />
+    </ProtectedRouteSuper>
+  }
+/>,
 
 
 
