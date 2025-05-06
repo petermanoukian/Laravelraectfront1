@@ -41,6 +41,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             name: res.data.name,
             email: res.data.email,
             role: role as User['role'],
+            img: res.data.img ?? null,
+            pdf: res.data.pdf ?? null,
           };
 
           setUser(authUser);

@@ -216,7 +216,7 @@ const { user, setUser, isAuthenticated } = useAuth();
   
 
   return (
-    <DashboardSuperAdminLayout>
+    <>
 
     <div className="w-full p-3 bg-gray-100 mb-4">
     <p className = "mt-3 block"> Welcome {user?.name} {user?.id}  {user?.role} </p>
@@ -387,7 +387,7 @@ const { user, setUser, isAuthenticated } = useAuth();
           </div>
         </form>
       </div>
-    </DashboardSuperAdminLayout>
+    </>
   );
 };
 

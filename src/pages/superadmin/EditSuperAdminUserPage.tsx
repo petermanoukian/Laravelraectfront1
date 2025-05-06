@@ -361,7 +361,7 @@ const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 
 
   return (
-    <DashboardSuperAdminLayout>
+    <>
 
       <div className="w-full p-3 bg-gray-100 mb-4">
         <p className="mt-3 block">Welcome {user?.name}</p>
@@ -500,7 +500,7 @@ const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
           </div>
         </form>
       </div>
-    </DashboardSuperAdminLayout>
+    </>
       );
     };
     

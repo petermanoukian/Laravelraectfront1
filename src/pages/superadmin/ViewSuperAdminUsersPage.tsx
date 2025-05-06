@@ -21,6 +21,8 @@ type User = {
   name: string;
   email: string;
   role: string;
+  img?: string | null;
+  pdf?: string | null;
 };
 
 
@@ -118,7 +120,7 @@ const ViewSuperAdminUsersPage = () => {
     if (!isNaN(parsedPage) && parsedPage !== currentPage) {
       setCurrentPage(parsedPage);
     }
-  }, [searchParams, currentPage]); // make sure currentPage is in deps
+  }, [searchParams]); // make sure currentPage is in deps
   
 
   useEffect(() => {
@@ -189,8 +191,7 @@ const ViewSuperAdminUsersPage = () => {
         });
       }
       else {
-        console.log("selectedUserIds type:", typeof selectedUsers);
-        console.log("selectedUserIds:", selectedUsers);
+
         
         await axiosInstance.delete('/superadmin/users/deleteall', {
           data: { user_ids: ids },
@@ -229,9 +230,9 @@ const ViewSuperAdminUsersPage = () => {
 
   if (loading) return (
   <>
-  <DashboardSuperAdminLayout>
+
   <div>..... Loading All Users...</div>
-  </DashboardSuperAdminLayout>
+
 
     </>
   )
@@ -239,7 +240,7 @@ const ViewSuperAdminUsersPage = () => {
   return (
 
     <>
-    <DashboardSuperAdminLayout>
+  
      
     <div className="w-full p-3 bg-gray-100 mb-4">
     <p className = "mt-3 block"> Welcome {user?.name} {user?.id}  {user?.role} </p>
@@ -278,38 +279,49 @@ const ViewSuperAdminUsersPage = () => {
       )}
 
     {users.length > 0 ?  (
-      <table className="min-w-full border">
+
+      <>
+        <table className="min-w-full border">
 
 
 
-      <UserTableHeader
-        sortField={sortField}
-        sortDirection={sortDirection}
-        setSortField={setSortField}
-        setSortDirection={setSortDirection}
-        allSelected={
-          users
-            .filter((u) => currentUserRole === 'superadmin' && currentUserId !== u.id)
-            .every((u) => selectedUsers.includes(u.id))
-        }
-        onToggleSelectAll={handleSelectAll}
+        <UserTableHeader
+          sortField={sortField}
+          sortDirection={sortDirection}
+          setSortField={setSortField}
+          setSortDirection={setSortDirection}
+          allSelected={
+            users
+              .filter((u) => currentUserRole === 'superadmin' && currentUserId !== u.id)
+              .every((u) => selectedUsers.includes(u.id))
+          }
+          onToggleSelectAll={handleSelectAll}
+        />
+
+
+          <tbody>
+            {users.map((userx: User) => (
+              <UserTableRow
+                key={userx.id}
+                user={userx}
+                currentUserId={user?.id}
+                currentUserRole={user?.role}
+                onDeleteConfirm={confirmDelete}
+                isSelected={selectedUsers.includes(userx.id)}
+                onToggleSelect={handleToggleSelect}
+              />
+            ))}
+          </tbody>
+        </table>
+
+        <Pagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+        section="superadmin"
       />
 
-
-        <tbody>
-          {users.map((userx: User) => (
-            <UserTableRow
-              key={userx.id}
-              user={userx}
-              currentUserId={user?.id}
-              currentUserRole={user?.role}
-              onDeleteConfirm={confirmDelete}
-              isSelected={selectedUsers.includes(userx.id)}
-              onToggleSelect={handleToggleSelect}
-            />
-          ))}
-        </tbody>
-      </table>
+        </>
 
 ) : (
   <p>No users available or an error occurred.</p>
@@ -330,12 +342,7 @@ const ViewSuperAdminUsersPage = () => {
 
       )}
 
-      <Pagination
-        totalPages={totalPages}
-        currentPage={currentPage}
-        onPageChange={handlePageChange}
-        section="superadmin"
-      />
+
 
       {deleteConfirmation.show && (
           <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center">
@@ -361,7 +368,6 @@ const ViewSuperAdminUsersPage = () => {
     </div>
 
 
-    </DashboardSuperAdminLayout>
     </>
 
   );

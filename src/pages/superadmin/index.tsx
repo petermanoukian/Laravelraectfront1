@@ -27,7 +27,6 @@ const SuperadminPage = () => {
 
 
 
-<DashboardSuperAdminLayout>
       <h2 className="text-2xl font-semibold mb-4">Welcome, Superadmin!</h2>
       <p>This is your dashboard content. You can add stats, tables, or anything here.</p>
       <div className="mt-6">
@@ -38,7 +37,7 @@ const SuperadminPage = () => {
           Logout
         </button>
       </div>
-    </DashboardSuperAdminLayout>
+  
     </>
 
 

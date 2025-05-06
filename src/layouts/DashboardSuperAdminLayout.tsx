@@ -1,13 +1,11 @@
-import React, { ReactNode ,  useState } from 'react';
+//DashboardSuperAdminLayout.tsx
+import React, { ReactNode ,  useState , useEffect } from 'react';
 import UserStatus from '@/components/superadmin/UserStatus';
 import { Link, NavLink } from 'react-router-dom';
-
 import SidebarMenuLeftSuperAdmin, { MenuSection } from '@/components/superadmin/SidebarMenuLeftSuperAdmin';
-
-
 import { ChevronDown, ChevronUp } from 'lucide-react'
-
-
+import { Outlet } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 
 const menuSections: MenuSection[] = [
@@ -19,14 +17,12 @@ const menuSections: MenuSection[] = [
     ],
   },
   {
-    title: 'Admin',
+    title: 'Categories',
     items: [
-      { label: 'Dashboard', to: '/admin/dashboard' },
-      { label: 'Users', to: '/admin/users' },
+      { label: 'View categories', to: '/superadmin/cats' },
+      { label: 'Add category', to: '/superadmin/cats/add' },
     ],
   },
-
-  
   {
     title: 'Reports', // New section
     items: [
@@ -41,28 +37,53 @@ const menuSections: MenuSection[] = [
 
 
 const DashboardSuperAdminLayout = ({ children }: { children: ReactNode }) => {
-
-  
-  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({});
+const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({});
 
 
+const location = useLocation();
 
-  const setOpenSectionForRoute = (title: string) => {
-    setOpenSections((prev) => {
-      if (prev[title]) return prev; // already open
-      return {
-        ...Object.keys(prev).reduce((acc, key) => ({ ...acc, [key]: false }), {}),
-        [title]: true,
-      };
-    });
-  };
-  
-  const toggleSection = (title: string) => {
-    setOpenSections((prev) => ({
+useEffect(() => {
+  const currentPath = location.pathname;
+
+
+  for (const section of menuSections) {
+    if (section.items.some(item => currentPath.startsWith(item.to))) {
+      
+      setOpenSections({
+        [section.title]: true,
+      });
+      break;
+    }
+  }
+}, [location.pathname]);
+
+
+const setOpenSectionForRoute = (title: string) => {
+  setOpenSections((prev) => {
+    if (prev[title]) return prev; // already open, skip
+    return {
       ...Object.keys(prev).reduce((acc, key) => ({ ...acc, [key]: false }), {}),
-      [title]: !prev[title],
-    }));
-  };
+      [title]: true,
+    };
+  });
+};
+  
+const toggleSection = (title: string) => {
+  setOpenSections((prev) => {
+    const isOpen = prev[title];
+
+    // Close all, then toggle the clicked one
+    const newState: { [key: string]: boolean } = {};
+    for (const key in prev) {
+      newState[key] = false;
+    }
+
+    newState[title] = !isOpen;
+    return newState;
+  });
+};
+
+
   
   
   return (
@@ -75,7 +96,7 @@ const DashboardSuperAdminLayout = ({ children }: { children: ReactNode }) => {
                 {/* Left side: title */}
                 <div className="w-1/2">
                 <h1 className="text-xl font-bold text-gray-800">
-                <NavLink to="/superadmin"
+                <NavLink to="/superadmin" onClick={() => setOpenSections({})}
                   className={({ isActive }) =>
                             isActive ? 'text-blue-600 font-bold' : 'text-gray-600 hover:text-green-500'
                   }
@@ -113,7 +134,7 @@ const DashboardSuperAdminLayout = ({ children }: { children: ReactNode }) => {
         {/* Main Content */}
         <main className="flex-1 bg-gray-50 p-6 overflow-y-auto">
           
-          {children}
+        <Outlet />
         </main>
       </div>
 

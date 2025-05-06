@@ -1,3 +1,4 @@
+//SidebarMenuLeftSuperAdmin.tsx
 import React, { useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -28,14 +29,22 @@ const SidebarMenuLeftSuperAdmin = ({
   useEffect(() => {
     const activeRoute = location.pathname;
 
+  
     menuSections.forEach((section) => {
-      const isMatch = section.items.some((item) => activeRoute === item.to || activeRoute.startsWith(item.to + '/'));
+      const isMatch = section.items.some(
+        (item) => activeRoute === item.to || activeRoute.startsWith(item.to + '/')
+      );
 
-      if (isMatch) {
-        setOpenSectionForRoute(section.title);
+  
+      if (isMatch && !openSections[section.title]) {
+    
+        //setOpenSectionForRoute(section.title);
       }
     });
-  }, [location.pathname, menuSections, setOpenSectionForRoute]);
+  }, [location.pathname, menuSections, openSections, setOpenSectionForRoute]);
+  
+  
+  
 
   return (
     <nav className="w-60 space-y-2 p-4">

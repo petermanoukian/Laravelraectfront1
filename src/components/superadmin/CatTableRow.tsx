@@ -1,6 +1,5 @@
-// UserTableRow.tsx 
 
-// src/components/superadmin/UserTableRow.tsx
+// src/components/superadmin/CatTableRow.tsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 
@@ -8,29 +7,24 @@ type Role = {
   name: string;
 };
 
-type User = {
+type Cat = {
   id: number;
   name: string;
-  email: string;
-  role: string; 
-  img?: string | null;
-  pdf?: string | null;
+
 
 };
 
 type Props = {
-  user: User;
-  currentUserId?: number;
+  cat:Cat;
   currentUserRole?: string;
-  onDeleteConfirm: (userId: number) => void;
+  onDeleteConfirm: (catId: number) => void;
   isSelected: boolean;
-  onToggleSelect: (userId: number) => void;
+  onToggleSelect: (catId: number) => void;
 };
 
-const UserTableRow: React.FC<Props> = (props) => {
+const CatTableRow: React.FC<Props> = (props) => {
   const {
-    user,
-    currentUserId,
+    cat,
     currentUserRole,
     onDeleteConfirm,
     isSelected,
@@ -38,7 +32,7 @@ const UserTableRow: React.FC<Props> = (props) => {
   } = props;
 
   const canDelete =
-    currentUserRole === 'superadmin' && currentUserId !== user.id; 
+    currentUserRole === 'superadmin'; 
 
   return (
     <tr className="hover:bg-gray-50">
@@ -47,28 +41,25 @@ const UserTableRow: React.FC<Props> = (props) => {
           <input
             type="checkbox"
             checked={isSelected}
-            onChange={() => onToggleSelect(user.id)}
+            onChange={() => onToggleSelect(cat.id)}
             className=" mr-2 "
           />
         )}
       </td>
-      <td className="border px-4 py-2">{user.id}</td>
-      <td className="border px-4 py-2">{user.name}</td>
-      <td className="border px-4 py-2">{user.email}</td>
-      <td className="border px-4 py-2">
-      {user.roles.length > 0 ? user.roles[0].name : 'No role assigned'}
+      <td className="border px-4 py-2">{cat.id}</td>
+      <td className="border px-4 py-2">{cat.name}</td>
 
-        </td>
+
       <td className="border px-4 py-2 space-x-2">
         <NavLink
-          to={`/superadmin/users/edit/${user.id}`}
+          to={`/superadmin/cat/edit/${cat.id}`}
           className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-sm"
         >
           Edit
         </NavLink>
         {canDelete && (
           <button
-            onClick={() => onDeleteConfirm(user.id)}
+            onClick={() => onDeleteConfirm(cat.id)}
             className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
           >
             Delete
@@ -79,4 +70,4 @@ const UserTableRow: React.FC<Props> = (props) => {
   );
 };
 
-export default UserTableRow;
+export default CatTableRow;
