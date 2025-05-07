@@ -149,7 +149,7 @@ const ViewSuperAdminUsersPage = () => {
         });
 
         setUsers(res.data.users.data);
-        console.log("Users list:", users);
+        
         setTotalPages(res.data.users.last_page);
       } catch (error) {
         console.error('Error fetching users:', error);

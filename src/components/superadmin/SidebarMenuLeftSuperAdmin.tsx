@@ -1,6 +1,6 @@
 //SidebarMenuLeftSuperAdmin.tsx
 import React, { useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 export type MenuSection = {
@@ -23,7 +23,7 @@ const SidebarMenuLeftSuperAdmin = ({
   }: SidebarMenuLeftSuperAdminProps) => 
   {
   const location = useLocation();
-
+  const navigate = useNavigate();
   // Automatically open parent section based on active route (even if it's a submenu)
 
   useEffect(() => {
@@ -66,6 +66,15 @@ const SidebarMenuLeftSuperAdmin = ({
           {openSections[section.title] && (
             <div className="ml-4 mt-1 flex flex-col space-y-1 text-sm">
               {section.items.map((item) => (
+                  <div
+                  key={item.to}
+                  onClick={() => {
+                    if (location.pathname === item.to) {
+                      // Force rerender by pushing a dummy state
+                      navigate(item.to, { state: { refresh: Date.now() } });
+                    }
+                  }}
+                >
                 <NavLink
                   key={item.to}
                   to={item.to}
@@ -77,6 +86,7 @@ const SidebarMenuLeftSuperAdmin = ({
                 >
                   {item.label}
                 </NavLink>
+                </div>
               ))}
             </div>
           )}

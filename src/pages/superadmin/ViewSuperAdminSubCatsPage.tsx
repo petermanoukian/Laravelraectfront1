@@ -1,6 +1,7 @@
-//ViewSuperAdminCatsPage.tsx
+//ViewSuperAdminSubCatsPage.tsx
+
 import React from 'react'
-import { useNavigate , useSearchParams  } from 'react-router-dom';
+import { useNavigate , useSearchParams , useParams  } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../lib/axios';
 import { Link , NavLink} from 'react-router-dom';
@@ -10,22 +11,28 @@ import CatTableRow from '../../components/superadmin/CatTableRow';
 import CatFilterControls from '../../components/superadmin/CatFilterControls';
 import Pagination from '../../components/Pagination';
 import { useLocation } from 'react-router-dom';
-type Cat = {
+
+
+type Subcat = {
   id: number;
+  catid: number;
   name: string;
 
 };
 
-const ViewSuperAdminCatsPage = () => {
+const ViewSuperAdminSubCatsPage = () => {
 
   const [cats, setCats] = useState<Cat[]>([]);
+  const [subcats, setSubCats] = useState<Cat[]>([]);
   const [loading, setLoading] = useState(true);
   const { user, setUser, isAuthenticated } = useAuth();
   const location = useLocation();
 
-  const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean; catIds: number[] }>({
+
+
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean; subcatIds: number[] }>({
     show: false,
-    catIds: [],
+    subcatIds: [],
   }); 
 
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -33,7 +40,7 @@ const ViewSuperAdminCatsPage = () => {
     const [totalPages, setTotalPages] = useState(1); // Total pages for pagination
     const perPage = 10;
     const [refreshKey, setRefreshKey] = useState(0);
-    const [selectedCats, setSelectedCats] = useState<number[]>([]);
+    const [selectedSubCats, setSelectedSubCats] = useState<number[]>([]);
     const currentUserRole = user?.role;
 
     const [searchTerm, setSearchTerm] = useState('');
@@ -42,26 +49,34 @@ const ViewSuperAdminCatsPage = () => {
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const handleToggleSelect = (catId: number) => {
-      setSelectedCats((prevSelected) =>
-        prevSelected.includes(catId)
-          ? prevSelected.filter((id) => id !== catId)
-          : [...prevSelected, catId]
+
+    const { categoryid } = useParams();
+
+    useEffect(() => {
+      console.log('Category ID from URL path:', categoryid);
+    }, [categoryid]);
+    
+
+    const handleToggleSelect = (subcatId: number) => {
+      setSelectedSubCats((prevSelected) =>
+        prevSelected.includes(subcatId)
+          ? prevSelected.filter((id) => id !== subcatId)
+          : [...prevSelected, subcatId]
       );
     };
 
 
     const handleSelectAll = () => {
       const selectableIds = cats
-        .filter((u) => currentUserRole === 'superadmin' )
+        
         .map((u) => u.id);
     
-      const allSelected = selectableIds.every((id) => selectedCats.includes(id));
+      const allSelected = selectableIds.every((id) => selectedSubCats.includes(id));
     
       if (allSelected) {
-        setSelectedCats([]);
+        setSelectedSubCats([]);
       } else {
-        setSelectedCats(selectableIds);
+        setSelectedSubCats(selectableIds);
       }
     };
     
@@ -73,21 +88,21 @@ const ViewSuperAdminCatsPage = () => {
     if (!isNaN(parsedPage) && parsedPage !== currentPage) {
       setCurrentPage(parsedPage);
     }
-  }, [searchParams]); // make sure currentPage is in deps
+  }, [currentPage, searchParams]); // make sure currentPage is in deps
   
 
   useEffect(() => {
     setCurrentPage(1);
     setSearchParams({ page: '1' });
-  }, [ debouncedSearchTerm]);
+  }, [debouncedSearchTerm, setSearchParams]);
   
 
 
     useEffect(() => {
     
-      const fetchCats = async () => {
+      const fetchSubCats = async () => {
         try {
-          const response = await axiosInstance.get('/superadmin/cats', {
+          const response = await axiosInstance.get('/superadmin/subcats/view', {
             params: {
               page: currentPage,
               perPage: perPage,
@@ -97,22 +112,23 @@ const ViewSuperAdminCatsPage = () => {
             },
           });
           
+          setSubCats(response.data.subcats.data);
           setCats(response.data.cats.data);
-          setTotalPages(response.data.cats.last_page);
+          setTotalPages(response.data.subcats.last_page);
           console.log('Total pages:', response.data.totalPages);
           setLoading(false);
        
         } catch (error) {
-          console.error('Error fetching cats:', error);
+          console.error('Error fetching subcats:', error);
         }
       };
     
-      fetchCats();
+      fetchSubCats();
     }, [currentPage, refreshKey , debouncedSearchTerm, sortField, sortDirection ]);
 
     useEffect(() => {
       if (location.state?.refresh) {
-        console.log('Reloading categories...');
+        console.log('Reloading subcategories...');
         setSearchTerm(''); // Reset search term
       }
     }, [location.state?.refresh]); // Will only run when location.state.refresh changes
@@ -139,15 +155,15 @@ const ViewSuperAdminCatsPage = () => {
 
       try {
         if (ids.length === 1) {
-          await axiosInstance.delete(`/superadmin/cat/delete/${ids[0]}`, {
+          await axiosInstance.delete(`/superadmin/subcat/delete/${ids[0]}`, {
             withCredentials: true,
           });
         }
         else {
   
           
-          await axiosInstance.delete('/superadmin/cats/deleteall', {
-            data: { catids: ids },
+          await axiosInstance.delete('/superadmin/subcats/deleteall', {
+            data: { subids: ids },
             withCredentials: true,
             headers: {
               'Content-Type': 'application/json',
@@ -156,24 +172,24 @@ const ViewSuperAdminCatsPage = () => {
         }
       
         // Remove deleted users from UI
-        setCats((prev) => prev.filter((u) => !ids.includes(u.id)));
-        setSelectedCats((prev) => prev.filter((id) => !ids.includes(id)));
+        setSubCats((prev) => prev.filter((u) => !ids.includes(u.id)));
+        setSelectedSubCats((prev) => prev.filter((id) => !ids.includes(id)));
       
-        setDeleteConfirmation({ show: false, catIds: [] });
+        setDeleteConfirmation({ show: false, subcatIds: [] });
         setRefreshKey((prev) => prev + 1);
       } catch (error) {
         console.error('Error deleting user(s):', error);
       }
     };
 
-    const confirmDelete = (catOrCats: number | number[]) => {
-      const catIds = Array.isArray(catOrCats) ? catOrCats : [catOrCats];
-      setDeleteConfirmation({ show: true, catIds });
+    const confirmDelete = (subOrSubs: number | number[]) => {
+      const subcatIds = Array.isArray(subOrSubs) ? subOrSubs : [subOrSubs];
+      setDeleteConfirmation({ show: true, subcatIds });
     };
 
 
     const cancelDelete = () => {
-      setDeleteConfirmation({ show: false, catIds: [] });
+      setDeleteConfirmation({ show: false, subcatIds: [] });
     };
 
 
@@ -182,7 +198,7 @@ const ViewSuperAdminCatsPage = () => {
     if (loading) return (
       <>
     
-      <div>..... Loading All cats...</div>
+      <div>..... Loading ...</div>
     
     
         </>
@@ -193,15 +209,15 @@ const ViewSuperAdminCatsPage = () => {
      
       <div className="w-full p-3 bg-gray-100 mb-4">
         <p className = "mt-3 block text-sm">
-        <NavLink to="/superadmin/cats/add" className="text-blue-500 hover:underline font-bold text-sm">
-            &rsaquo; Add New Category
+        <NavLink to="/superadmin/subcats/add" className="text-blue-500 hover:underline font-bold text-sm">
+            &rsaquo; Add New SubCategory
         </NavLink> 
         </p>
       </div>
 
 
       <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">Categories</h2>
+      <h2 className="text-xl font-bold mb-4">SubCategories</h2>
 
       <CatFilterControls
 
@@ -211,21 +227,21 @@ const ViewSuperAdminCatsPage = () => {
 
 
 
-      {selectedCats.length > 0 && (
+      {selectedSubCats.length > 0 && (
         <>
         <div className = 'flex items-center justify-center px-2 '>
         <button
-          onClick={() => confirmDelete(selectedCats)}
+          onClick={() => confirmDelete(selectedSubCats)}
           className="mb-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
         >
-          Delete Selected ({selectedCats.length})
+          Delete Selected ({selectedSubCats.length})
         </button>
         </div>
         
         </>
       )}
 
-    {cats.length > 0 ?  (
+    {subcats.length > 0 ?  (
       <>
 
       <table className="min-w-full border">
@@ -239,19 +255,19 @@ const ViewSuperAdminCatsPage = () => {
           allSelected={
             cats
               .filter((u) => currentUserRole === 'superadmin' )
-              .every((u) => selectedCats.includes(u.id))
+              .every((u) => selectedSubCats.includes(u.id))
           }
           onToggleSelectAll={handleSelectAll}
         />
 
         <tbody>
-          {cats.map((catx: Cat) => (
+          {cats.map((subcatx: Subcat) => (
             <CatTableRow
-              key={catx.id}
-              cat={catx}
+              key={subcatx.id}
+              cat={subcatx}
               currentUserRole={user?.role}
               onDeleteConfirm={confirmDelete}
-              isSelected={selectedCats.includes(catx.id)}
+              isSelected={selectedSubCats.includes(subcatx.id)}
               onToggleSelect={handleToggleSelect}
             />
           ))}
@@ -268,17 +284,17 @@ const ViewSuperAdminCatsPage = () => {
       </>
 
 ) : (
-  <p>No categories or an error occurred.</p>
+  <p>No records</p>
 )}
 
-      {selectedCats.length > 0 && (
+      {selectedSubCats.length > 0 && (
         <>
         <div className = 'flex items-center justify-center px-5 py-5'>
         <button
-          onClick={() => confirmDelete(selectedCats)}
+          onClick={() => confirmDelete(selectedSubCats)}
           className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
         >
-          Delete Selected ({selectedCats.length})
+          Delete Selected ({selectedSubCats.length})
         </button>
         </div>
         
@@ -295,7 +311,7 @@ const ViewSuperAdminCatsPage = () => {
               <div className="flex justify-end space-x-4">
                 <button onClick={cancelDelete} className="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
                 <button
-                  onClick={() => handleDelete(deleteConfirmation.catIds)}
+                  onClick={() => handleDelete(deleteConfirmation.subcatIds)}
 
                   className="bg-red-600 text-white px-4 py-2 rounded"
                 >
@@ -311,4 +327,8 @@ const ViewSuperAdminCatsPage = () => {
   );
 };
 
-export default ViewSuperAdminCatsPage
+
+
+
+
+export default ViewSuperAdminSubCatsPage

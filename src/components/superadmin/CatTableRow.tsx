@@ -35,8 +35,8 @@ const CatTableRow: React.FC<Props> = (props) => {
     currentUserRole === 'superadmin'; 
 
   return (
-    <tr className="hover:bg-gray-50">
-       <td className="text-center border" >
+    <tr className="hover:bg-gray-50 ">
+       <td className="text-center border size-16" >
         {canDelete && (
           <input
             type="checkbox"
@@ -46,7 +46,7 @@ const CatTableRow: React.FC<Props> = (props) => {
           />
         )}
       </td>
-      <td className="border px-4 py-2">{cat.id}</td>
+      <td className="border px-4 py-2 size-20">{cat.id}</td>
       <td className="border px-4 py-2">{cat.name}</td>
 
 
@@ -57,6 +57,24 @@ const CatTableRow: React.FC<Props> = (props) => {
         >
           Edit
         </NavLink>
+
+        <NavLink
+            to={`/superadmin/subcats/view/${cat.id}`}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+          >
+            View Subcategories
+          </NavLink>
+
+          <NavLink
+            to={`/superadmin/subcats/add/${cat.id}`}
+            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+          >
+            Add Subcategories
+          </NavLink>
+
+
+
+
         {canDelete && (
           <button
             onClick={() => onDeleteConfirm(cat.id)}

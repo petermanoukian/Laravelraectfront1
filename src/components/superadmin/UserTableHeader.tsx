@@ -28,7 +28,7 @@ const UserTableHeader: React.FC<Props> = ({
   };
 
   const renderArrows = (field: string) => (
-    <div className="flex flex-col text-xs leading-none mt-1">
+    <div className="flex flex-col text-xs leading-none mt-1 ml-1">
       <span className={sortField === field && sortDirection === 'asc' ? 'text-blue-600 font-bold' : 'text-gray-400'}>
         ▲
       </span>
@@ -56,7 +56,7 @@ const UserTableHeader: React.FC<Props> = ({
             className="border px-4 py-2 text-left cursor-pointer select-none"
             onClick={() => handleSort(field)}
           >
-            <div className="flex flex-col items-start">
+            <div className="flex items-center gap-1">
               <span>{field.charAt(0).toUpperCase() + field.slice(1)}</span>
               {renderArrows(field)}
             </div>
