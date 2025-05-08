@@ -26,6 +26,15 @@ const SidebarMenuLeftSuperAdmin = ({
   const navigate = useNavigate();
   // Automatically open parent section based on active route (even if it's a submenu)
 
+  const handleAllSubs = () => {
+    navigate({
+      pathname: '/superadmin/subcats/view',
+      search: '?page=1',
+    }, {
+      state: { refresh: true, ts: Date.now() } // 👈 force a state refresh
+    });
+  };
+
   useEffect(() => {
     const activeRoute = location.pathname;
 

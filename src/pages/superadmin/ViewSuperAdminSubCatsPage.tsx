@@ -6,54 +6,62 @@ import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../lib/axios';
 import { Link , NavLink} from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import CatTableHeader from '../../components/superadmin/CatTableHeader';
-import CatTableRow from '../../components/superadmin/CatTableRow';
-import CatFilterControls from '../../components/superadmin/CatFilterControls';
+import SubCatTableHeader from '../../components/superadmin/SubCatTableHeader';  
+import SubCatTableRow from '../../components/superadmin/SubCatTableRow';
+import SubCatFilterControls from '../../components/superadmin/SubCatFilterControls';
 import Pagination from '../../components/Pagination';
 import { useLocation } from 'react-router-dom';
+
+
+
+type Cat = {
+  id: number;
+  name: string;
+};
 
 
 type Subcat = {
   id: number;
   catid: number;
   name: string;
-
 };
 
 const ViewSuperAdminSubCatsPage = () => {
 
-  const [cats, setCats] = useState<Cat[]>([]);
-  const [subcats, setSubCats] = useState<Cat[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { user, setUser, isAuthenticated } = useAuth();
-  const location = useLocation();
+    const [cats, setCats] = useState<Cat[]>([]);
+    const [subcats, setSubCats] = useState<Subcat[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { user, setUser, isAuthenticated } = useAuth();
+    const location = useLocation();
+    const [categoryName, setCategoryName] = useState<string | null>(null);
+    const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean; subcatIds: number[] }>({
+      show: false,
+      subcatIds: [],
+    }); 
 
-
-
-  const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean; subcatIds: number[] }>({
-    show: false,
-    subcatIds: [],
-  }); 
-
-    const [currentPage, setCurrentPage] = useState<number>(1);
-  
+    //const [currentPage, setCurrentPage] = useState<number>(1); 
     const [totalPages, setTotalPages] = useState(1); // Total pages for pagination
     const perPage = 10;
     const [refreshKey, setRefreshKey] = useState(0);
     const [selectedSubCats, setSelectedSubCats] = useState<number[]>([]);
     const currentUserRole = user?.role;
-
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [sortField, setSortField] = useState('id');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [searchParams, setSearchParams] = useSearchParams();
-
-
     const { categoryid } = useParams();
+    const [selectedCategoryId, setSelectedCategoryId] = useState(categoryid || '');
+    const navigate = useNavigate();
+
+    //const [shouldRefresh, setShouldRefresh] = useState(false);
+    //const [refreshTrigger, setRefreshTrigger] = useState(false);
+
 
     useEffect(() => {
-      console.log('Category ID from URL path:', categoryid);
+      if (categoryid) {
+        setSelectedCategoryId(categoryid);
+      }
     }, [categoryid]);
     
 
@@ -67,7 +75,7 @@ const ViewSuperAdminSubCatsPage = () => {
 
 
     const handleSelectAll = () => {
-      const selectableIds = cats
+      const selectableIds = subcats
         
         .map((u) => u.id);
     
@@ -80,75 +88,116 @@ const ViewSuperAdminSubCatsPage = () => {
       }
     };
     
-  useEffect(() => {
-    const pageParam = searchParams.get('page');
-    const parsedPage = pageParam ? parseInt(pageParam, 10) : 1;
-  
-    // Only update if parsed page is valid and different from current state
-    if (!isNaN(parsedPage) && parsedPage !== currentPage) {
-      setCurrentPage(parsedPage);
-    }
-  }, [currentPage, searchParams]); // make sure currentPage is in deps
-  
-
-  useEffect(() => {
-    setCurrentPage(1);
-    setSearchParams({ page: '1' });
-  }, [debouncedSearchTerm, setSearchParams]);
-  
-
-
+    /*
     useEffect(() => {
+      const pageParam = searchParams.get('page');
+      const parsedPage = pageParam ? parseInt(pageParam, 10) : 1;
     
-      const fetchSubCats = async () => {
-        try {
-          const response = await axiosInstance.get('/superadmin/subcats/view', {
-            params: {
-              page: currentPage,
-              perPage: perPage,
-              search: debouncedSearchTerm,
-              sortField: sortField,
-              sortDirection: sortDirection,
-            },
-          });
-          
-          setSubCats(response.data.subcats.data);
-          setCats(response.data.cats.data);
-          setTotalPages(response.data.subcats.last_page);
-          console.log('Total pages:', response.data.totalPages);
-          setLoading(false);
-       
-        } catch (error) {
-          console.error('Error fetching subcats:', error);
-        }
-      };
-    
-      fetchSubCats();
-    }, [currentPage, refreshKey , debouncedSearchTerm, sortField, sortDirection ]);
-
-    useEffect(() => {
-      if (location.state?.refresh) {
-        console.log('Reloading subcategories...');
-        setSearchTerm(''); // Reset search term
+      if (!isNaN(parsedPage) && parsedPage !== currentPage) {
+        setCurrentPage(parsedPage);
       }
-    }, [location.state?.refresh]); // Will only run when location.state.refresh changes
+    }, [currentPage, searchParams]);
+    */
+
+    const pageParam = searchParams.get('page');
+    const currentPage = pageParam ? parseInt(pageParam, 10) : 1
+
+    useEffect(() => {
+      const newParams = new URLSearchParams(searchParams);
+    
+      // Reset to page 1 ONLY if debouncedSearchTerm or selectedCategoryId changes
+      newParams.set('page', '1');
+    
+      // Only update searchParams if page is NOT already 1
+      if (searchParams.get('page') !== '1') {
+        setSearchParams(newParams);
+      }
+    
+      // Also reset local state page
+      //setCurrentPage(1);
+    }, [debouncedSearchTerm, selectedCategoryId]);
+    
+    
+    
+
+  useEffect(() => {
+    const fetchSubCats = async () => {
+      try {
+        const url = selectedCategoryId
+          ? `/superadmin/subcats/view/${selectedCategoryId}`
+          : `/superadmin/subcats/view`; // no catid
+  
+        const response = await axiosInstance.get(url, {
+          params: {
+            page: currentPage,
+            perPage,
+            search: debouncedSearchTerm,
+            sortField,
+            sortDirection,
+          },
+        });
+        //console.log(response.data);
+        setSubCats(response.data.subcats.data);
+        setCats(response.data.cats);
+        //console.log('subcats only :', response.data.subcats.data);
+        //console.log('cats only :', response.data.cats);
+        setTotalPages(response.data.subcats.last_page);
+        setCategoryName(response.data?.category_name ?? null);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching subcats:', error);
+      }
+    };
+  
+    fetchSubCats();
+    }, [
+    selectedCategoryId,
+    currentPage,
+    refreshKey,
+    debouncedSearchTerm,
+    sortField,
+    sortDirection,
+  ]);
+  
+  
 
 
-     useEffect(() => {
-        const handler = setTimeout(() => {
-          if (searchTerm.length >= 2 || searchTerm === '') {
-            setDebouncedSearchTerm(searchTerm);
-          }
-        }, 400);
-        return () => clearTimeout(handler);
-      }, [searchTerm]);
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const refreshSubs = params.get('refreshsubs');
 
-      const handlePageChange = (page: number) => {
-        if (page !== currentPage) {
-          setCurrentPage(page);
-          setSearchParams({ page: page.toString() });
+    if (refreshSubs === 'fullrefresh') {
+      console.log('Full refresh of subcategories triggered...');
+
+      // Reset search term and category selection
+      setSearchTerm('');
+      setSelectedCategoryId('');
+
+      // Navigate with a fresh page number, keeping everything reset
+      navigate('/superadmin/subcats/view?page=1', { replace: true });
+    }
+  }, [location, navigate]);
+  
+  
+
+
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        if (searchTerm.length >= 2 || searchTerm === '') {
+          setDebouncedSearchTerm(searchTerm);
         }
-      };
+      }, 400);
+      return () => clearTimeout(handler);
+    }, [searchTerm]);
+
+
+
+    const handlePageChange = (page: number) => {
+      const newParams = new URLSearchParams(searchParams);
+      newParams.set('page', page.toString());
+      setSearchParams(newParams);
+    };
+    
 
 
     const handleDelete = async (ids: number[]) => {
@@ -209,9 +258,12 @@ const ViewSuperAdminSubCatsPage = () => {
      
       <div className="w-full p-3 bg-gray-100 mb-4">
         <p className = "mt-3 block text-sm">
-        <NavLink to="/superadmin/subcats/add" className="text-blue-500 hover:underline font-bold text-sm">
-            &rsaquo; Add New SubCategory
-        </NavLink> 
+        <NavLink
+      to={`/superadmin/subcats/add${selectedCategoryId ? `/${selectedCategoryId}` : ''}`}
+      className="text-blue-500 hover:underline font-bold text-sm"
+    >
+      &rsaquo; Add New SubCategory {categoryName ? `to ${categoryName}` : ''}
+    </NavLink>
         </p>
       </div>
 
@@ -219,10 +271,12 @@ const ViewSuperAdminSubCatsPage = () => {
       <div className="p-6">
       <h2 className="text-xl font-bold mb-4">SubCategories</h2>
 
-      <CatFilterControls
-
+      <SubCatFilterControls
+      cats={cats}
       searchTerm={searchTerm}
       setSearchTerm={setSearchTerm}
+      selectedCategoryId={selectedCategoryId}
+      setSelectedCategoryId={setSelectedCategoryId}
     />
 
 
@@ -246,25 +300,28 @@ const ViewSuperAdminSubCatsPage = () => {
 
       <table className="min-w-full border">
 
-        <CatTableHeader
+        <SubCatTableHeader
 
           sortField={sortField}
           sortDirection={sortDirection}
           setSortField={setSortField}
           setSortDirection={setSortDirection}
           allSelected={
-            cats
-              .filter((u) => currentUserRole === 'superadmin' )
+            subcats
+        
               .every((u) => selectedSubCats.includes(u.id))
           }
           onToggleSelectAll={handleSelectAll}
         />
 
+
         <tbody>
-          {cats.map((subcatx: Subcat) => (
-            <CatTableRow
+          {subcats.map((subcatx: Subcat) => (
+            <SubCatTableRow
+
+
               key={subcatx.id}
-              cat={subcatx}
+              subcat={subcatx}
               currentUserRole={user?.role}
               onDeleteConfirm={confirmDelete}
               isSelected={selectedSubCats.includes(subcatx.id)}
@@ -272,6 +329,8 @@ const ViewSuperAdminSubCatsPage = () => {
             />
           ))}
         </tbody>
+  
+
       </table>
 
       <Pagination

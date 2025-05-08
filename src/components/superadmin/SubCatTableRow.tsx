@@ -10,21 +10,26 @@ type Role = {
 type Cat = {
   id: number;
   name: string;
-
-
 };
+
+type SubCat = {
+    id: number;
+    name: string;
+    catid: number;
+    cat: Cat;
+  };
 
 type Props = {
-  cat:Cat;
+  subcat:SubCat;
   currentUserRole?: string;
-  onDeleteConfirm: (catId: number) => void;
+  onDeleteConfirm: (subcatId: number) => void;
   isSelected: boolean;
-  onToggleSelect: (catId: number) => void;
+  onToggleSelect: (subcatId: number) => void;
 };
 
-const CatTableRow: React.FC<Props> = (props) => {
+const SubCatTableRow: React.FC<Props> = (props) => {
   const {
-    cat,
+    subcat,
     currentUserRole,
     onDeleteConfirm,
     isSelected,
@@ -41,36 +46,36 @@ const CatTableRow: React.FC<Props> = (props) => {
           <input
             type="checkbox"
             checked={isSelected}
-            onChange={() => onToggleSelect(cat.id)}
+            onChange={() => onToggleSelect(subcat.id)}
             className=" mr-2 "
           />
         )}
       </td>
-      <td className="border px-4 py-2 size-20">{cat.id}</td>
-      <td className="border px-4 py-2">{cat.name}</td>
-
+      <td className="border px-4 py-2 size-20">{subcat.id}</td>
+      <td className="border px-4 py-2">{subcat.name}</td>
+      <td className="border px-4 py-2">{subcat.cat.name}</td> 
 
       <td className="border px-4 py-2 space-x-2">
         <NavLink
-          to={`/superadmin/cat/edit/${cat.id}`}
+          to={`/superadmin/subcat/edit/${subcat.id}`}
           className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-sm"
         >
           Edit
         </NavLink>
 
         <NavLink
-            to={`/superadmin/subcats/view/${cat.id}`}
+            to={`/superadmin/subcats/view/${subcat.id}`}
             className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
           >
-            View Subcategories ({cat.subcats_count})
-        </NavLink>
+            View Subcategories
+          </NavLink>
 
-        <NavLink
-            to={`/superadmin/subcats/add/${cat.id}`}
+          <NavLink
+            to={`/superadmin/subcats/add/${subcat.id}`}
             className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
-        >
+          >
             Add Subcategories
-        </NavLink>
+          </NavLink>
 
 
 
@@ -88,4 +93,4 @@ const CatTableRow: React.FC<Props> = (props) => {
   );
 };
 
-export default CatTableRow;
+export default SubCatTableRow;

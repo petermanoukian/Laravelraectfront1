@@ -21,7 +21,7 @@ const menuSections: MenuSection[] = [
     items: [
       { label: 'View categories', to: '/superadmin/cats' },
       { label: 'Add category', to: '/superadmin/cats/add' },
-      { label: 'View subcategories', to: '/superadmin/subcats/view' }, // <-- NEW
+      { label: 'View subcategories', to: '/superadmin/subcats/view?refreshsubs=fullrefresh' }, // <-- NEW
       { label: 'Add subcategory', to: '/superadmin/subcats/add' },
     ],
   },

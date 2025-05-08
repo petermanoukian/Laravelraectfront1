@@ -10,10 +10,10 @@ import CatTableRow from '../../components/superadmin/CatTableRow';
 import CatFilterControls from '../../components/superadmin/CatFilterControls';
 import Pagination from '../../components/Pagination';
 import { useLocation } from 'react-router-dom';
+
 type Cat = {
   id: number;
   name: string;
-
 };
 
 const ViewSuperAdminCatsPage = () => {

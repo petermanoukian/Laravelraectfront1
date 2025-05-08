@@ -28,10 +28,6 @@ const { user, setUser, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
-
-  
-  
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
   
@@ -49,8 +45,6 @@ const { user, setUser, isAuthenticated } = useAuth();
   };
   
 
-
-  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -58,16 +52,9 @@ const { user, setUser, isAuthenticated } = useAuth();
   
     const newErrors: { [key: string]: string[] } = {};
 
-  
-  
-    // React validations
     if (!formData.name.trim()) newErrors.name = ['Name is required.'];
     else if (formData.name.length > 255) newErrors.name = ['Name must be under 255 characters.'];
   
-
- 
-  
-    // If any frontend errors, stop here
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       setLoading(false);
@@ -75,12 +62,12 @@ const { user, setUser, isAuthenticated } = useAuth();
     }
   
     // Proceed to submit
-    const userData = new FormData();
-    userData.append('name', formData.name);
+    const catData = new FormData();
+    catData.append('name', formData.name);
   
   
     try {
-      await axiosInstance.post('/superadmin/cat/add', userData, {
+      await axiosInstance.post('/superadmin/cat/add', catData, {
         withCredentials: true,
         headers: {
           'Content-Type': 'multipart/form-data', // Fix from your previous 'application/json'
@@ -114,7 +101,6 @@ const { user, setUser, isAuthenticated } = useAuth();
     <>
 
     <div className="w-full p-3 bg-gray-100 mb-4">
-    <p className = "mt-3 block"> Welcome {user?.name} {user?.id}  {user?.role} </p>
     <p className = "mt-3 block text-sm">
     <NavLink to="/superadmin/cats" className="text-blue-500 hover:underline font-bold text-sm">
         &rsaquo; View categories
@@ -127,11 +113,6 @@ const { user, setUser, isAuthenticated } = useAuth();
         <h2 className="font-medium text-3xl">Add Category</h2>
         <form onSubmit={handleSubmit}>
           <div className="mt-8 grid lg:grid-cols-1 gap-4 w-full">
-
-
-
-
-
 
             <div>
               <label>Name:</label>
