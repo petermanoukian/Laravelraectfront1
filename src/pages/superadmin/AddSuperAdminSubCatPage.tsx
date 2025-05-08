@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../lib/axios';
 import { NavLink } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import Select from 'react-select';
 
 type Cat = {
   id: number;
@@ -50,7 +51,7 @@ const AddSuperAdminSubCatPage = () => {
   
   const { currentUser } = useAuth();
 
-
+  /*
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
   
@@ -69,6 +70,46 @@ const AddSuperAdminSubCatPage = () => {
   
     setButtonDisabled(false);
     setErrors({});
+  };
+  */
+
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | { value: string }
+  ) => {
+    // Check if the event is from a native select element or react-select
+    if ('target' in e) {
+      const { name, value } = e.target;
+  
+      if (name === 'name') {
+        setName(value);
+      }
+  
+      if (name === 'catid') {
+        setCategoryid(value); 
+      }
+  
+      // Update form data
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+  
+      setButtonDisabled(false);
+      setErrors({});
+    } else {
+      // If the event is from react-select
+      const { value } = e;
+  
+      setFormData((prev) => ({
+        ...prev,
+        catid: value,
+      }));
+  
+      setCategoryid(value); // Update separate categoryid state too
+      setButtonDisabled(false);
+      setErrors({});
+    }
   };
   
 
@@ -153,6 +194,16 @@ const AddSuperAdminSubCatPage = () => {
     }
   }, [formData.catid]);
 
+  const categoryOptions: OptionType[] = Array.isArray(cats)
+  ? cats.map((cat) => ({
+      value: String(cat.id),
+      label: cat.name,
+    }))
+  : [];
+
+const selectedCategoryOption = categoryid
+  ? categoryOptions.find((option) => option.value === categoryid) || null
+  : null;
 
 
   return (
@@ -169,13 +220,29 @@ const AddSuperAdminSubCatPage = () => {
 
       
       <div className="p-8 rounded border border-gray-200 w-full max-w-3xl mx-auto">
-        <h2 className="font-medium text-3xl">Add Category</h2>
+        <h2 className="font-medium text-3xl">Add SubCategory</h2>
         <form onSubmit={handleSubmit}>
           <div className="mt-8 grid lg:grid-cols-1 gap-4 w-full">
 
 
           <div>
             <label>Category:</label>
+
+            <Select
+  options={categoryOptions}
+  value={selectedCategoryOption}
+  onChange={(selectedOption) => {
+    setCategoryid(selectedOption?.value || '');
+    handleChange({ value: selectedOption?.value || '' }); // Trigger the handleChange for react-select
+  }}
+  placeholder="Select a category..."
+  isSearchable={true}
+  className="w-64"
+  classNamePrefix="react-select"
+/>
+
+
+
             <select
               required
               className="bg-gray-100 border border-gray-200 rounded py-1 px-3 block focus:ring-blue-500 focus:border-blue-500 text-gray-700 w-full"
@@ -194,7 +261,7 @@ const AddSuperAdminSubCatPage = () => {
 
           {!formData.catid ? (
   <p className="text-gray-600 italic">Select a category to add a subcategory.</p>
-) : (
+  ) : (
 
           <div>
             <label>Name:</label>

@@ -10,3 +10,11 @@
 }
 
 
+/* in global.css or index.css */
+.react-select__input input {
+  color: black !important;
+}
+
+.react-select__menu {
+  z-index: 50 !important;
+}

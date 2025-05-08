@@ -2,6 +2,7 @@
 // src/components/superadmin/SubCatFilterControls.tsx
 
 import React from 'react';
+import Select from 'react-select';
 
 type Cat = {
     id: number;
@@ -25,6 +26,16 @@ const SubCatFilterControls: React.FC<Props> = ({
   setSelectedCategoryId,
 
 }) => {
+
+
+  const categoryOptions = [
+    { value: '', label: 'All Categories' },
+    ...cats.map((cat) => ({
+      value: String(cat.id),
+      label: cat.name,
+    })),
+  ];
+
   return (
     <>
         <div className="flex flex-wrap gap-4 items-center mb-4">
@@ -36,10 +47,27 @@ const SubCatFilterControls: React.FC<Props> = ({
                 className="border px-3 py-2 rounded w-64"
             />
 
+
+<Select
+  options={categoryOptions}
+  onChange={(selectedOption) =>
+    setSelectedCategoryId(selectedOption?.value || '')
+  }
+  value={
+    categoryOptions.find((option) => option.value === selectedCategoryId) || null
+  }
+  placeholder="Select a category..."
+  isSearchable={true}
+  className="w-64"
+  classNamePrefix="react-select"
+/>
+
+            {/*}
             <select
             value={selectedCategoryId}
             onChange={(e) => setSelectedCategoryId(e.target.value)}
             className="border px-3 py-2 rounded w-64"
+           
             >
             <option value="">All Categories</option>
             {Array.isArray(cats) && cats.length > 0 ? (
@@ -52,6 +80,8 @@ const SubCatFilterControls: React.FC<Props> = ({
                 <option disabled>No categories available</option>
             )}
             </select>
+
+            */}
 
 
        </div>
