@@ -64,25 +64,26 @@ const SubCatTableRow: React.FC<Props> = (props) => {
         </NavLink>
 
         <NavLink
-            to={`/superadmin/subcats/view/${subcat.id}`}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
-          >
-            View Subcategories
-          </NavLink>
+          to={`/superadmin/prods/view/${subcat.catid}/${subcat.id}`}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+        >
+          View Products
+        </NavLink>
 
-          <NavLink
-            to={`/superadmin/subcats/add/${subcat.id}`}
-            className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
-          >
-            Add Subcategories
-          </NavLink>
+
+        <NavLink
+          to={`/superadmin/prod/add/${subcat.catid}/${subcat.id}`}
+          className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+        >
+          Add Product
+        </NavLink>
 
 
 
 
         {canDelete && (
           <button
-            onClick={() => onDeleteConfirm(cat.id)}
+            onClick={() => onDeleteConfirm(subcat.id)}
             className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
           >
             Delete

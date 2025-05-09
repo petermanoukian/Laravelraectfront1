@@ -143,6 +143,8 @@ const AddSuperAdminSubCatPage = () => {
     if (!formData.name.trim()) newErrors.name = ['Name is required.'];
     else if (formData.name.length > 255) newErrors.name = ['Name must be under 255 characters.'];
   
+    if (!formData.catid.trim()) newErrors.name = ['Category is required.'];
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       setLoading(false);
@@ -194,12 +196,17 @@ const AddSuperAdminSubCatPage = () => {
     }
   }, [formData.catid]);
 
-  const categoryOptions: OptionType[] = Array.isArray(cats)
-  ? cats.map((cat) => ({
-      value: String(cat.id),
-      label: cat.name,
-    }))
-  : [];
+  const categoryOptions: OptionType[] = [
+    { value: '', label: 'All Categories' }, // Add this line
+    ...(
+      Array.isArray(cats)
+        ? cats.map((cat) => ({
+            value: String(cat.id),
+            label: cat.name,
+          }))
+        : []
+    ),
+  ];
 
 const selectedCategoryOption = categoryid
   ? categoryOptions.find((option) => option.value === categoryid) || null
@@ -229,19 +236,44 @@ const selectedCategoryOption = categoryid
             <label>Category:</label>
 
             <Select
-  options={categoryOptions}
-  value={selectedCategoryOption}
-  onChange={(selectedOption) => {
-    setCategoryid(selectedOption?.value || '');
-    handleChange({ value: selectedOption?.value || '' }); // Trigger the handleChange for react-select
-  }}
-  placeholder="Select a category..."
-  isSearchable={true}
-  className="w-64"
-  classNamePrefix="react-select"
-/>
+              options={categoryOptions}
+              value={selectedCategoryOption}
+              onChange={(selectedOption) => {
+                setCategoryid(selectedOption?.value || '');
+                handleChange({ value: selectedOption?.value || '' }); 
 
+                if (formData.name.trim() !== '') {
+                  if (debounceRef.current) clearTimeout(debounceRef.current);
+            
+                  debounceRef.current = window.setTimeout(async () => {
+                    try {
+                      const res = await axiosInstance.post(
+                        '/subcats/check-name',
+                        {
+                          name: name,
+                          catid: selectedOption?.value || '',
+                        },
+                        { withCredentials: true }
+                      );
+            
+                      const available = !res.data.exists;
+                      setSubAvailable(available);
+                      setButtonDisabled(!available);
+                    } catch (err) {
+                      console.error('check failed:', err);
+                      setSubAvailable(null);
+                    }
+                  }, 300);
+                }
+              }} 
 
+              placeholder="Select a category..."
+              isSearchable={true}
+              className="w-64"
+              classNamePrefix="react-select"
+            />
+
+            {/*
 
             <select
               required
@@ -257,11 +289,12 @@ const selectedCategoryOption = categoryid
                 </option>
               ))}
             </select>
+            */} 
           </div>
 
           {!formData.catid ? (
-  <p className="text-gray-600 italic">Select a category to add a subcategory.</p>
-  ) : (
+            <p className="text-gray-600 italic">Select a category to add a subcategory.</p>
+            ) : (
 
           <div>
             <label>Name:</label>
