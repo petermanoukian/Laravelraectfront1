@@ -246,7 +246,7 @@ const EditSuperAdminCatPage = () => {
             <div className="space-x-4 mt-8">
               <button type="submit" className="bg-blue-600 text-white px-6 py-3 rounded disabled:bg-gray-400" 
               disabled={buttonDisabled || loading}>
-                {loading ? 'Updating...' : 'Update User'}
+                {loading ? 'Updating...' : 'Update'}
               </button>
             </div>
           </div>

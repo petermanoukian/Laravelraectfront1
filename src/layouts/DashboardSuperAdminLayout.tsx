@@ -23,6 +23,8 @@ const menuSections: MenuSection[] = [
       { label: 'Add category', to: '/superadmin/cats/add' },
       { label: 'View subcategories', to: '/superadmin/subcats/view?refreshsubs=fullrefresh' }, // <-- NEW
       { label: 'Add subcategory', to: '/superadmin/subcats/add' },
+      { label: 'View Poducts', to: '/superadmin/prods/view?refreshsubs=fullrefresh' }, // <-- NEW
+      { label: 'Add Products', to: '/superadmin/prod/add' },
     ],
   },
   {

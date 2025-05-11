@@ -154,7 +154,7 @@ const { user, setUser, isAuthenticated } = useAuth();
               {nameAvailable === false && (
                 <p className="text-red-500 text-sm">Category exists.</p>
               )}
-              {nameAvailable === true && !errors.email && (
+              {nameAvailable === true &&  (
                 <p className="text-green-600 text-sm">Category available.</p>
               )}
 

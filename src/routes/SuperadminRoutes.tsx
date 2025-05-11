@@ -14,6 +14,9 @@ import EditSuperAdminCatPage from "@/pages/superadmin/EditSuperAdminCatPage";
 import ViewSuperAdminSubCatsPage from "@/pages/superadmin/ViewSuperAdminSubCatsPage";
 import AddSuperAdminSubCatPage from "@/pages/superadmin/AddSuperAdminSubCatPage"; 
 import EditSuperAdminSubCatPage from "@/pages/superadmin/EditSuperAdminSubCatPage"; 
+import ViewSuperAdminProductsPage from "@/pages/superadmin/ViewSuperAdminProductsPage";
+import AddSuperAdminProductPage from "@/pages/superadmin/AddSuperAdminProductPage";
+import EditSuperAdminProductPage from "@/pages/superadmin/EditSuperAdminProductPage";
 
 const SuperadminRoutes = [
   <Route
@@ -46,6 +49,17 @@ const SuperadminRoutes = [
     </Route>
 
     <Route path="subcat/edit/:id" element={<EditSuperAdminSubCatPage />} />
+
+    <Route path="prods/view" element={<ViewSuperAdminProductsPage />} />
+    <Route path="prods/view/:categoryid" element={<ViewSuperAdminProductsPage />} />
+    <Route path="prods/view/:categoryid/:subcategoryid" element={<ViewSuperAdminProductsPage />} />
+
+    <Route path="prod/add" element={<AddSuperAdminProductPage />} />
+    <Route path="prod/add/:categoryid" element={<AddSuperAdminProductPage />} />
+    <Route path="prod/add/:categoryid/:subcategoryid" element={<AddSuperAdminProductPage />} />
+
+    <Route path="prod/edit/:id" element={<EditSuperAdminProductPage />} />
+
 
 
 

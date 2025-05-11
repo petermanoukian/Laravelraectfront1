@@ -1,6 +1,5 @@
-//ViewSuperAdminSubCatsPage.tsx
-
 import React from 'react'
+
 import { useNavigate , useSearchParams , useParams  } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../lib/axios';
@@ -8,11 +7,9 @@ import { Link , NavLink} from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import SubCatTableHeader from '../../components/superadmin/SubCatTableHeader';  
 import SubCatTableRow from '../../components/superadmin/SubCatTableRow';
-import SubCatFilterControls from '../../components/superadmin/SubCatFilterControls';
+import ProdFilterControls from '../../components/superadmin/ProdFilterControls';
 import Pagination from '../../components/Pagination';
 import { useLocation } from 'react-router-dom';
-
-
 
 type Cat = {
   id: number;
@@ -27,24 +24,44 @@ type Subcat = {
   cat: Cat; 
 };
 
-const ViewSuperAdminSubCatsPage = () => {
+type Product = {
+  id: number;            // Product ID
+  name: string;          // Product name
+  prix: number;          // Price (could be decimal, type `number` will handle decimals)
+  des: string;           // Description (text field)
+  dess: string;          // Detailed description (WYSIWYG editor content, HTML)
+  img: File | null;      // Image file input (File object or null if no file)
+  pdf: File | null;      // PDF file input (File object or null if no file)
+  catid: number;        // Category ID
+  subid: number;      // Subcategory ID
+  vis: '0' | '1';        // Visibility (enum, either '0' or '1')
+  quan: number;          // Quantity (integer)
+  ordd: number;          // Order number (number)
+  cat: Cat; 
+  subcat: Subcat;        // Subcategory object
+};
 
-    const [cats, setCats] = useState<Cat[]>([]);
+
+
+const ViewSuperAdminProductsPage = () => {
+  const [cats, setCats] = useState<Cat[]>([]);
     const [subcats, setSubCats] = useState<Subcat[]>([]);
+    const [prods, setProds] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const { user, setUser, isAuthenticated } = useAuth();
     const location = useLocation();
     const [categoryName, setCategoryName] = useState<string | null>(null);
-    const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean; subcatIds: number[] }>({
+    const [subcategoryName, setSubcategoryName] = useState<string | null>(null);
+    const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean; prodIds: number[] }>({
       show: false,
-      subcatIds: [],
+      prodIds: [],
     }); 
 
     //const [currentPage, setCurrentPage] = useState<number>(1); 
     const [totalPages, setTotalPages] = useState(1); // Total pages for pagination
     const perPage = 10;
     const [refreshKey, setRefreshKey] = useState(0);
-    const [selectedSubCats, setSelectedSubCats] = useState<number[]>([]);
+    const [selectedProds, setSelectedProds] = useState<number[]>([]);
     const currentUserRole = user?.role;
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -52,7 +69,9 @@ const ViewSuperAdminSubCatsPage = () => {
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [searchParams, setSearchParams] = useSearchParams();
     const { categoryid } = useParams();
+    const { subcategoryid } = useParams();
     const [selectedCategoryId, setSelectedCategoryId] = useState(categoryid || '');
+    const [selectedSubcategoryId, setSelectedSubcategoryId] = useState(subcategoryid || '');
     const navigate = useNavigate();
 
     //const [shouldRefresh, setShouldRefresh] = useState(false);
@@ -64,41 +83,38 @@ const ViewSuperAdminSubCatsPage = () => {
         setSelectedCategoryId(categoryid);
       }
     }, [categoryid]);
+
+    useEffect(() => {
+      if (subcategoryid) {
+        setSelectedSubcategoryId(subcategoryid);
+      }
+    }, [subcategoryid]);
     
 
-    const handleToggleSelect = (subcatId: number) => {
-      setSelectedSubCats((prevSelected) =>
-        prevSelected.includes(subcatId)
-          ? prevSelected.filter((id) => id !== subcatId)
-          : [...prevSelected, subcatId]
+    const handleToggleSelect = (prodId: number) => {
+      setSelectedProds((prevSelected) =>
+        prevSelected.includes(prodId)
+          ? prevSelected.filter((id) => id !== prodId)
+          : [...prevSelected, prodId]
       );
     };
 
 
     const handleSelectAll = () => {
-      const selectableIds = subcats
+      const selectableIds = prods
         
         .map((u) => u.id);
     
-      const allSelected = selectableIds.every((id) => selectedSubCats.includes(id));
+      const allSelected = selectableIds.every((id) => selectedProds.includes(id));
     
       if (allSelected) {
-        setSelectedSubCats([]);
+        setSelectedProds([]);
       } else {
-        setSelectedSubCats(selectableIds);
+        setSelectedProds(selectableIds);
       }
     };
     
-    /*
-    useEffect(() => {
-      const pageParam = searchParams.get('page');
-      const parsedPage = pageParam ? parseInt(pageParam, 10) : 1;
-    
-      if (!isNaN(parsedPage) && parsedPage !== currentPage) {
-        setCurrentPage(parsedPage);
-      }
-    }, [currentPage, searchParams]);
-    */
+
 
     const pageParam = searchParams.get('page');
     const currentPage = pageParam ? parseInt(pageParam, 10) : 1
@@ -116,18 +132,24 @@ const ViewSuperAdminSubCatsPage = () => {
     
       // Also reset local state page
       //setCurrentPage(1);
-    }, [debouncedSearchTerm, selectedCategoryId]);
+    }, [debouncedSearchTerm, selectedCategoryId , selectedSubcategoryId]);
     
     
     
 
   useEffect(() => {
-    const fetchSubCats = async () => {
+    const fetchProds = async () => {
       try {
-        const url = selectedCategoryId
-          ? `/superadmin/subcats/view/${selectedCategoryId}`
-          : `/superadmin/subcats/view`; // no catid
-  
+
+          let url = '/superadmin/prods/view';
+
+        if (selectedCategoryId) {
+          url += `/${selectedCategoryId}`;
+        }
+        if (selectedSubcategoryId) {
+          url += `/${selectedSubcategoryId}`;
+        }
+        console.log('url is ' + url);
         const response = await axiosInstance.get(url, {
           params: {
             page: currentPage,
@@ -138,21 +160,24 @@ const ViewSuperAdminSubCatsPage = () => {
           },
         });
         //console.log(response.data);
-        setSubCats(response.data.subcats.data);
+        setSubCats(response.data.subcats);
         setCats(response.data.cats);
-        //console.log('subcats only :', response.data.subcats.data);
-        //console.log('cats only :', response.data.cats);
-        setTotalPages(response.data.subcats.last_page);
+        setProds(response.data.prods.data);
+        console.log('subcats only :', response.data.subcats);
+        console.log('cats only :', response.data.cats);
+        setTotalPages(response.data.prods.last_page);
         setCategoryName(response.data?.category_name ?? null);
+        setSubcategoryName(response.data?.subcategory_name ?? null);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching subcats:', error);
       }
     };
   
-    fetchSubCats();
+    fetchProds();
     }, [
     selectedCategoryId,
+    selectedSubcategoryId,
     currentPage,
     refreshKey,
     debouncedSearchTerm,
@@ -173,9 +198,10 @@ const ViewSuperAdminSubCatsPage = () => {
       // Reset search term and category selection
       setSearchTerm('');
       setSelectedCategoryId('');
+      setSelectedSubcategoryId('');
 
       // Navigate with a fresh page number, keeping everything reset
-      navigate('/superadmin/subcats/view?page=1', { replace: true });
+      navigate('/superadmin/prods/view?page=1', { replace: true });
     }
   }, [location, navigate]);
   
@@ -205,14 +231,14 @@ const ViewSuperAdminSubCatsPage = () => {
 
       try {
         if (ids.length === 1) {
-          await axiosInstance.delete(`/superadmin/subcat/delete/${ids[0]}`, {
+          await axiosInstance.delete(`/superadmin/prod/delete/${ids[0]}`, {
             withCredentials: true,
           });
         }
         else {
   
           
-          await axiosInstance.delete('/superadmin/subcats/deleteall', {
+          await axiosInstance.delete('/superadmin/prods/deleteall', {
             data: { subids: ids },
             withCredentials: true,
             headers: {
@@ -222,24 +248,24 @@ const ViewSuperAdminSubCatsPage = () => {
         }
       
         // Remove deleted users from UI
-        setSubCats((prev) => prev.filter((u) => !ids.includes(u.id)));
-        setSelectedSubCats((prev) => prev.filter((id) => !ids.includes(id)));
+        setProds((prev) => prev.filter((u) => !ids.includes(u.id)));
+        setSelectedProds((prev) => prev.filter((id) => !ids.includes(id)));
       
-        setDeleteConfirmation({ show: false, subcatIds: [] });
+        setDeleteConfirmation({ show: false, prodIds: [] });
         setRefreshKey((prev) => prev + 1);
       } catch (error) {
-        console.error('Error deleting user(s):', error);
+        console.error('Error deleting row(s):', error);
       }
     };
 
-    const confirmDelete = (subOrSubs: number | number[]) => {
-      const subcatIds = Array.isArray(subOrSubs) ? subOrSubs : [subOrSubs];
-      setDeleteConfirmation({ show: true, subcatIds });
+    const confirmDelete = (prodOrProds: number | number[]) => {
+      const prodIds = Array.isArray(prodOrProds) ? prodOrProds : [prodOrProds];
+      setDeleteConfirmation({ show: true, prodIds });
     };
 
 
     const cancelDelete = () => {
-      setDeleteConfirmation({ show: false, subcatIds: [] });
+      setDeleteConfirmation({ show: false, prodIds: [] });
     };
 
 
@@ -259,12 +285,28 @@ const ViewSuperAdminSubCatsPage = () => {
      
       <div className="w-full p-3 bg-gray-100 mb-4">
         <p className = "mt-3 block text-sm">
+
+        <NavLink to="/superadmin/cats" className="text-blue-500 hover:underline font-bold text-sm">
+            &rsaquo; View categories 
+        </NavLink>
+
         <NavLink
-      to={`/superadmin/subcats/add${selectedCategoryId ? `/${selectedCategoryId}` : ''}`}
-      className="text-blue-500 hover:underline font-bold text-sm"
-    >
-      &rsaquo; Add New SubCategory {categoryName ? `to ${categoryName}` : ''}
-    </NavLink>
+          to={`/superadmin/subcats/view${categoryid ? `/${categoryid}` : ''}`}
+          className="ml-1 text-blue-500 hover:underline font-bold text-sm"
+        >
+          &rsaquo; View Subcategories {categoryName ? ` | ${categoryName}` : ''}
+        </NavLink> 
+        <br/><br/>
+        <NavLink
+          to={`/superadmin/prod/add${categoryid ? `/${categoryid}` : ''}${subcategoryid ? `/${subcategoryid}` : ''}`}
+          className=" text-blue-500 hover:underline font-bold text-sm"
+        >
+          &rsaquo; Add Products {categoryName ? ` | ${categoryName}` : ''}
+           {subcategoryName ? ` | ${subcategoryName}` : ''}
+        </NavLink> 
+
+
+
         </p>
       </div>
 
@@ -272,31 +314,34 @@ const ViewSuperAdminSubCatsPage = () => {
       <div className="p-6">
       <h2 className="text-xl font-bold mb-4">SubCategories</h2>
 
-      <SubCatFilterControls
+      <ProdFilterControls
       cats={cats}
+      subcats={subcats}
       searchTerm={searchTerm}
       setSearchTerm={setSearchTerm}
       selectedCategoryId={selectedCategoryId}
       setSelectedCategoryId={setSelectedCategoryId}
+      selectedSubcategoryId={selectedSubcategoryId}
+      setSelectedSubcategoryId={setSelectedSubcategoryId}
     />
 
 
 
-      {selectedSubCats.length > 0 && (
+      {selectedProds.length > 0 && (
         <>
         <div className = 'flex items-center justify-center px-2 '>
         <button
-          onClick={() => confirmDelete(selectedSubCats)}
+          onClick={() => confirmDelete(selectedProds)}
           className="mb-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
         >
-          Delete Selected ({selectedSubCats.length})
+          Delete Selected ({selectedProds.length})
         </button>
         </div>
         
         </>
       )}
 
-    {subcats.length > 0 ?  (
+    {prods.length > 0 ?  (
       <>
 
       <table className="min-w-full border">
@@ -308,24 +353,24 @@ const ViewSuperAdminSubCatsPage = () => {
           setSortField={setSortField}
           setSortDirection={setSortDirection}
           allSelected={
-            subcats
+            prods
         
-              .every((u) => selectedSubCats.includes(u.id))
+              .every((u) => selectedProds.includes(u.id))
           }
           onToggleSelectAll={handleSelectAll}
         />
 
 
         <tbody>
-          {subcats.map((subcatx: Subcat) => (
+          {prods.map((subcatx: Subcat) => (
             <SubCatTableRow
 
 
               key={subcatx.id}
-              subcat={{ ...subcatx, cat: subcatx.cat ?? { id: subcatx.catid, name: '' } }}
+              subcat={subcatx}
               currentUserRole={user?.role}
               onDeleteConfirm={confirmDelete}
-              isSelected={selectedSubCats.includes(subcatx.id)}
+              isSelected={selectedProds.includes(subcatx.id)}
               onToggleSelect={handleToggleSelect}
             />
           ))}
@@ -347,14 +392,14 @@ const ViewSuperAdminSubCatsPage = () => {
   <p>No records</p>
 )}
 
-      {selectedSubCats.length > 0 && (
+      {selectedProds.length > 0 && (
         <>
         <div className = 'flex items-center justify-center px-5 py-5'>
         <button
-          onClick={() => confirmDelete(selectedSubCats)}
+          onClick={() => confirmDelete(selectedProds)}
           className="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
         >
-          Delete Selected ({selectedSubCats.length})
+          Delete Selected ({selectedProds.length})
         </button>
         </div>
         
@@ -387,8 +432,4 @@ const ViewSuperAdminSubCatsPage = () => {
   );
 };
 
-
-
-
-
-export default ViewSuperAdminSubCatsPage
+export default ViewSuperAdminProductsPage

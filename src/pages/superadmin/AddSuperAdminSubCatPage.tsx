@@ -44,6 +44,7 @@ const AddSuperAdminSubCatPage = () => {
 
   const [name, setName] = useState<string>('');
   const [cats, setCats] = useState<Cat[]>([]);
+  const [categoryName, setCategoryName] = useState<string | null>(null);
   const [subAvailable, setSubAvailable] = useState<boolean | null>(null);
 
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({}); 
@@ -116,14 +117,19 @@ const AddSuperAdminSubCatPage = () => {
   useEffect(() => {
     
     const fetchCats = async () => {
+
+        const url = categoryid
+          ? `/superadmin/subcat/add/${categoryid}`
+          : `/superadmin/subcat/add`; // no catid
+
       try {
-        const response = await axiosInstance.get('/superadmin/subcat/add/', {
+        const response = await axiosInstance.get(url, {
         
         });
         console.log('Fetched cats:', response.data.cats);
         setCats(response.data.cats);
-
-     
+         setCategoryName(response.data?.category_name ?? null); // Set category name if available
+        console.log('Category name:', response.data.category_name);
       } catch (error) {
         console.error('Error fetching cats:', error);
       }
@@ -217,15 +223,21 @@ const selectedCategoryOption = categoryid
     
     <>
 
-    <div className="w-full p-3 bg-gray-100 mb-4">
-    <p className = "mt-3 block text-sm">
-    <NavLink to="/superadmin/cats" className="text-blue-500 hover:underline font-bold text-sm">
-        &rsaquo; View categories
-    </NavLink> 
-    </p>
-    </div>
+      <div className="w-full p-3 bg-gray-100 mb-4">
+        <p className = "mt-3 block text-sm">
+        <NavLink to="/superadmin/cats" className="text-blue-500 hover:underline font-bold text-sm">
+            &rsaquo; View categories
+        </NavLink> 
 
-      
+        <NavLink
+          to={`/superadmin/subcats/view${categoryid ? `/${categoryid}` : ''}`}
+          className="ml-1 text-blue-500 hover:underline font-bold text-sm"
+        >
+          &rsaquo; View Subcategories {categoryName ? `Belonging to ${categoryName}` : ''}
+        </NavLink>
+        </p>
+      </div>
+
       <div className="p-8 rounded border border-gray-200 w-full max-w-3xl mx-auto">
         <h2 className="font-medium text-3xl">Add SubCategory</h2>
         <form onSubmit={handleSubmit}>
@@ -342,7 +354,7 @@ const selectedCategoryOption = categoryid
             {subAvailable === false && (
               <p className="text-red-500 text-sm">SubCategory exists.</p>
             )}
-            {subAvailable === true && !errors.email && (
+            {subAvailable === true && (
               <p className="text-green-600 text-sm">SubCategory available.</p>
             )}
 

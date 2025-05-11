@@ -81,6 +81,7 @@ const SubCatTableRow: React.FC<Props> = (props) => {
 
 
 
+
         {canDelete && (
           <button
             onClick={() => onDeleteConfirm(subcat.id)}
