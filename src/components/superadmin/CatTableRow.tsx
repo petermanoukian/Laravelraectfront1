@@ -10,7 +10,8 @@ type Role = {
 type Cat = {
   id: number;
   name: string;
-
+  subcats_count: number;
+  catprods_count: number;
 
 };
 
@@ -76,7 +77,7 @@ const CatTableRow: React.FC<Props> = (props) => {
           to={`/superadmin/prods/view/${cat.id}`}
           className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
         >
-          View Products
+          View Products ({cat.catprods_count})
         </NavLink>
 
         <NavLink

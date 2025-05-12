@@ -25,6 +25,7 @@ type Subcat = {
   catid: number;
   name: string;
   cat: Cat; 
+  subprods_count: number;
 };
 
 const ViewSuperAdminSubCatsPage = () => {

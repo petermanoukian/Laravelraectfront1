@@ -7,12 +7,15 @@ import Select from 'react-select';
 type Cat = {
     id: number;
     name: string;
+    subcats_count: number;
+    catprods_count: number;
   };
 
   type Subcat = {
     id: number;
     name: string;
     catid: number; 
+    subprods_count: number;
   };
 
 type Props = {
@@ -42,21 +45,27 @@ const ProdFilterControls: React.FC<Props> = ({
 }) => {
 
 
+
   const categoryOptions = [
     { value: '', label: 'All Categories' },
     ...cats.map((cat) => ({
       value: String(cat.id),
-      label: cat.name,
+      label: `${cat.name}-(${cat.subcats_count}subcategories-${cat.catprods_count} Items)`,
+      subcats_count: cat.subcats_count,
+      catprods_count: cat.catprods_count,
     })),
   ];
 
-    const subcategoryOptions = [
-        { value: '', label: 'All Subcategories' },
-        ...subcats.map((subcat) => ({
-        value: String(subcat.id),
-        label: subcat.name,
-        })),
-    ];
+
+  const subcategoryOptions = [
+    { value: '', label: 'All Subcategories' },
+    ...subcats.map((subcat) => ({
+      value: String(subcat.id),
+      label: `${subcat.name}-(${subcat.subprods_count} Items)`, 
+      subprods_count: subcat.subprods_count, 
+    })),
+  ];
+
 
   return (
     <>
@@ -80,7 +89,7 @@ const ProdFilterControls: React.FC<Props> = ({
                 }
                 placeholder="Select a category..."
                 isSearchable={true}
-                className="w-64"
+                className="w-85"
                 classNamePrefix="react-select"
                 />
 
@@ -94,7 +103,7 @@ const ProdFilterControls: React.FC<Props> = ({
                 }
                 placeholder="Select a subcategory..."
                 isSearchable={true}
-                className="w-64"
+                className="w-75"
                 classNamePrefix="react-select"
                 />
 

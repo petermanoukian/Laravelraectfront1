@@ -261,19 +261,19 @@ const EditSuperAdminSubCatPage = () => {
   }, [errors, subAvailable]);
   
 
-  const categoryOptions: OptionType[] = [
-    { value: '', label: 'All Categories' }, // Add this line
-    ...(
-      Array.isArray(cats)
+  
+  
+  const categoryOptions = useMemo(() => {
+    return [
+      { value: '', label: 'All Categories' },
+      ...(Array.isArray(cats)
         ? cats.map((cat) => ({
             value: String(cat.id),
             label: cat.name,
           }))
-        : []
-    ),
-  ];
-  
-
+        : []),
+    ];
+  }, [cats]);
 
 
   const selectedCategoryOption = useMemo(() => {

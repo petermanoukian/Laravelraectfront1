@@ -5,15 +5,18 @@ import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../lib/axios';
 import { Link , NavLink} from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import SubCatTableHeader from '../../components/superadmin/SubCatTableHeader';  
-import SubCatTableRow from '../../components/superadmin/SubCatTableRow';
+import ProdTableHeader from '../../components/superadmin/ProdTableHeader';  
+import ProdTableRow from '../../components/superadmin/ProdTableRow';
 import ProdFilterControls from '../../components/superadmin/ProdFilterControls';
 import Pagination from '../../components/Pagination';
 import { useLocation } from 'react-router-dom';
 
+
 type Cat = {
   id: number;
   name: string;
+  subcats_count: number;
+  catprods_count: number;
 };
 
 
@@ -22,6 +25,7 @@ type Subcat = {
   catid: number;
   name: string;
   cat: Cat; 
+  subprods_count: number;
 };
 
 type Product = {
@@ -30,8 +34,8 @@ type Product = {
   prix: number;          // Price (could be decimal, type `number` will handle decimals)
   des: string;           // Description (text field)
   dess: string;          // Detailed description (WYSIWYG editor content, HTML)
-  img: File | null;      // Image file input (File object or null if no file)
-  pdf: File | null;      // PDF file input (File object or null if no file)
+  img: string | null;      // Image file input (File object or null if no file)
+  pdf: string | null;      // PDF file input (File object or null if no file)
   catid: number;        // Category ID
   subid: number;      // Subcategory ID
   vis: '0' | '1';        // Visibility (enum, either '0' or '1')
@@ -44,7 +48,8 @@ type Product = {
 
 
 const ViewSuperAdminProductsPage = () => {
-  const [cats, setCats] = useState<Cat[]>([]);
+    const baseUrl = import.meta.env.VITE_API_PUBLIC_URL;
+    const [cats, setCats] = useState<Cat[]>([]);
     const [subcats, setSubCats] = useState<Subcat[]>([]);
     const [prods, setProds] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -81,6 +86,7 @@ const ViewSuperAdminProductsPage = () => {
     useEffect(() => {
       if (categoryid) {
         setSelectedCategoryId(categoryid);
+        console.log('chnaged cat  ' + categoryid)
       }
     }, [categoryid]);
 
@@ -88,7 +94,24 @@ const ViewSuperAdminProductsPage = () => {
       if (subcategoryid) {
         setSelectedSubcategoryId(subcategoryid);
       }
+      console.log('changed subcat  ' + subcategoryid)
     }, [subcategoryid]);
+
+
+useEffect(() => {
+  // Reset the subcategory when the selected category changes and doesn't match the initial categoryid
+  if (selectedCategoryId !== categoryid) {
+    setSelectedSubcategoryId('');
+  }
+}, [selectedCategoryId, categoryid]);  // This will run when either selectedCategoryId or categoryid changes
+ // This will trigger whenever selectedCategoryId changes
+
+
+  useEffect(() => {
+    
+    console.log('chnage of subcategory');
+  }, [selectedSubcategoryId]);
+
     
 
     const handleToggleSelect = (prodId: number) => {
@@ -298,12 +321,13 @@ const ViewSuperAdminProductsPage = () => {
         </NavLink> 
         <br/><br/>
         <NavLink
-          to={`/superadmin/prod/add${categoryid ? `/${categoryid}` : ''}${subcategoryid ? `/${subcategoryid}` : ''}`}
-          className=" text-blue-500 hover:underline font-bold text-sm"
+          to={`/superadmin/prod/add${selectedCategoryId ? `/${selectedCategoryId}` : ''}${selectedSubcategoryId ? `/${selectedSubcategoryId}` : ''}`}
+          className="text-blue-500 hover:underline font-bold text-sm"
         >
           &rsaquo; Add Products {categoryName ? ` | ${categoryName}` : ''}
-           {subcategoryName ? ` | ${subcategoryName}` : ''}
-        </NavLink> 
+          {subcategoryName ? ` | ${subcategoryName}` : ''}
+        </NavLink>
+
 
 
 
@@ -314,16 +338,16 @@ const ViewSuperAdminProductsPage = () => {
       <div className="p-6">
       <h2 className="text-xl font-bold mb-4">SubCategories</h2>
 
-      <ProdFilterControls
-      cats={cats}
-      subcats={subcats}
-      searchTerm={searchTerm}
-      setSearchTerm={setSearchTerm}
-      selectedCategoryId={selectedCategoryId}
-      setSelectedCategoryId={setSelectedCategoryId}
-      selectedSubcategoryId={selectedSubcategoryId}
-      setSelectedSubcategoryId={setSelectedSubcategoryId}
-    />
+        <ProdFilterControls
+        cats={cats}
+        subcats={subcats}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedCategoryId={selectedCategoryId}
+        setSelectedCategoryId={setSelectedCategoryId}
+        selectedSubcategoryId={selectedSubcategoryId}
+        setSelectedSubcategoryId={setSelectedSubcategoryId}
+      />
 
 
 
@@ -346,7 +370,7 @@ const ViewSuperAdminProductsPage = () => {
 
       <table className="min-w-full border">
 
-        <SubCatTableHeader
+        <ProdTableHeader
 
           sortField={sortField}
           sortDirection={sortDirection}
@@ -362,16 +386,17 @@ const ViewSuperAdminProductsPage = () => {
 
 
         <tbody>
-          {prods.map((subcatx: Subcat) => (
-            <SubCatTableRow
+          {prods.map((prodx: Product) => (
+            <ProdTableRow
 
 
-              key={subcatx.id}
-              subcat={subcatx}
+              key={prodx.id}
+              prod={prodx}
               currentUserRole={user?.role}
               onDeleteConfirm={confirmDelete}
-              isSelected={selectedProds.includes(subcatx.id)}
+              isSelected={selectedProds.includes(prodx.id)}
               onToggleSelect={handleToggleSelect}
+              baseUrl={baseUrl}
             />
           ))}
         </tbody>
@@ -416,7 +441,7 @@ const ViewSuperAdminProductsPage = () => {
               <div className="flex justify-end space-x-4">
                 <button onClick={cancelDelete} className="bg-gray-500 text-white px-4 py-2 rounded">Cancel</button>
                 <button
-                  onClick={() => handleDelete(deleteConfirmation.subcatIds)}
+                  onClick={() => handleDelete(deleteConfirmation.prodIds)}
 
                   className="bg-red-600 text-white px-4 py-2 rounded"
                 >

@@ -14,6 +14,8 @@ import { useLocation } from 'react-router-dom';
 type Cat = {
   id: number;
   name: string;
+  subcats_count: number;
+  catprods_count: number;
 };
 
 const ViewSuperAdminCatsPage = () => {

@@ -14,12 +14,15 @@ import { Editor } from '@tinymce/tinymce-react';
 type Cat = {
   id: number;
   name: string;
+  subcats_count: number;
+  catprods_count: number;
 }; 
 
 type Subcat = {
   id: number;
   catid: number;
   name: string;
+  subprods_count: number;
 };
 
 
@@ -33,10 +36,11 @@ type Subcat = {
   const [subcategoryName, setSubcategoryName] = useState<string>('');
   const [des, setDes] = useState('');
   const [dess, setDess] = useState(''); 
-  const [prix, setPrix] = useState(''); 
+  const [prix, setPrix] = useState(1); 
   const [vis, setVis] = useState('1');  
   const [quan, setQuan] = useState(1);  
   const [ordd, setOrdd] = useState(1);
+  const [imgPreview, setImgPreview] = useState<string | null>(null);
 
   // You might also want to log state to check the flow
   useEffect(() => {
@@ -65,7 +69,7 @@ type Subcat = {
     quan: number;
     ordd: number;
     vis: string;
-    prix: string;
+    prix: number;
     des: string;
     dess: string;
     img: File | null;
@@ -77,7 +81,7 @@ type Subcat = {
     quan: 1,
     ordd: 1,
     vis: '1',   
-    prix: '',
+    prix: 1,
     des: '',
     dess: '',
     img: null,
@@ -153,7 +157,7 @@ type Subcat = {
 
         if (name === 'prix') {
           // For price (prix), handle it as a string (allow decimals)
-          setPrix(value);
+          setPrix(parseFloat(value) || 0);
         }
 
         if (name === 'vis') {
@@ -225,7 +229,7 @@ type Subcat = {
     };
   
     fetchSubs();
-  }, [ categoryid]);
+  }, [ categoryid , subcategoryid]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -263,6 +267,7 @@ type Subcat = {
         'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'text/plain',
+        'application/octet-stream', 
         'image/jpeg',
         'image/png',
         'image/jpg',
@@ -287,7 +292,7 @@ type Subcat = {
     prodData.append('subid', formData.subid);
     prodData.append('vis', formData.vis);
     prodData.append('quan', formData.quan.toString());
-    prodData.append('prix', formData.prix);
+    prodData.append('prix', formData.prix.toString());
     prodData.append('des', formData.des);
     prodData.append('dess', formData.dess);
     prodData.append('ordd', formData.ordd.toString());
@@ -348,41 +353,41 @@ type Subcat = {
   }, [formData.subid]);
 
 
-    const handleImageFile = (file: File) => {
-      setImg(file); 
-      
-      setFormData({
-        ...formData,
-        img: file,
-      }); 
-      
-    }; 
-
+  const handleImageFile = (file: File) => {
+    setImg(file); 
     
-    const handlePdfFile = (file: File) => {
-      setPdf(file); 
-      setFormData({
-        ...formData,
-        pdf: file, 
-      }); 
+    setFormData({
+      ...formData,
+      img: file,
+    }); 
+    setImgPreview(URL.createObjectURL(file));
+  }; 
 
-      const url = URL.createObjectURL(file);
-      const type = file.type;
   
-      if (
-        type === 'application/pdf' ||
-        type.startsWith('image/') ||
-        type === 'text/plain' ||
-        type === 'application/msword' ||
-        type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-      ) 
-      {
-       //ok
-      } else {
-        console.warn('Unsupported file type selected');
-      }
+  const handlePdfFile = (file: File) => {
+    setPdf(file); 
+    setFormData({
+      ...formData,
+      pdf: file, 
+    }); 
 
-    }; 
+    const url = URL.createObjectURL(file);
+    const type = file.type;
+
+    if (
+      type === 'application/pdf' ||
+      type.startsWith('image/') ||
+      type === 'text/plain' ||
+      type === 'application/msword' ||
+      type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) 
+    {
+      //ok
+    } else {
+      console.warn('Unsupported file type selected');
+    }
+
+  }; 
 
 
 
@@ -409,7 +414,10 @@ type Subcat = {
       Array.isArray(cats)
         ? cats.map((cat) => ({
             value: String(cat.id),
-            label: cat.name,
+           
+            label: `${cat.name}-(${cat.subcats_count}Subcategories-${cat.catprods_count} Items)`,
+            subcats_count: cat.subcats_count,
+            catprods_count: cat.catprods_count,
           }))
         : []
     ),
@@ -426,7 +434,8 @@ type Subcat = {
       Array.isArray(subcats)
         ? subcats.map((sub) => ({
             value: String(sub.id),
-            label: sub.name,
+            label: `${sub.name}-(${sub.subprods_count} Items)`, 
+            subprods_count: sub.subprods_count, 
           }))
         : []
     ),
@@ -515,7 +524,7 @@ const checkNameAvailability = (name: string, catid: string, subid: string) => {
                     }}
                     placeholder="Select a category..."
                     isSearchable={true}
-                    className="w-64"
+                    className="w-85"
                     classNamePrefix="react-select"
                   />
 
@@ -540,7 +549,7 @@ const checkNameAvailability = (name: string, catid: string, subid: string) => {
                     }}
                     placeholder="Select a Subcategory..."
                     isSearchable={true}
-                    className="w-64"
+                    className="w-75"
                     classNamePrefix="react-select"
                   />
 
@@ -558,7 +567,7 @@ const checkNameAvailability = (name: string, catid: string, subid: string) => {
                 className="bg-gray-100 border border-gray-200 rounded py-1 px-3 block focus:ring-blue-500 focus:border-blue-500 text-gray-700 w-full"
                 type="text"
                 required
-                placeholder="Enter subcategory name"
+                placeholder="Title"
                 name="name"
                 value={formData.name}
                 disabled={!formData.catid || !formData.subid}
@@ -627,8 +636,6 @@ const checkNameAvailability = (name: string, catid: string, subid: string) => {
                 }));
               }}
             />
-
-
 
 
           </div>
@@ -704,16 +711,12 @@ const checkNameAvailability = (name: string, catid: string, subid: string) => {
         </div>
 
 
-
-
-
-
-
           <div>
               <label>Image: (JPG,Png,Gif only allowed)</label>
               <input
                 type="file"
                 name="img"
+                accept=".jpg,.jpeg,.png,.gif"
                 onChange={handleFileChange}
                 className="bg-gray-100 border border-gray-200 rounded-lg block w-full text-sm text-gray-500 
                 file:me-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold 
@@ -721,13 +724,25 @@ const checkNameAvailability = (name: string, catid: string, subid: string) => {
                 file:disabled:opacity-50 file:disabled:pointer-events-none 
                 dark:text-neutral-500 dark:file:bg-blue-500 dark:hover:file:bg-blue-400"
               />
+
+              {imgPreview && (
+                <img
+                  src={imgPreview}
+                  alt="Preview"
+                  className="w-32 h-32 object-cover border rounded mt-3 mb-2"
+                />
+              )}
+
+
+
               {errors.img && <p className="text-red-500 text-sm">{errors.img[0]}</p>}
             </div>
             <div>
-              <label>File: (PDF, Word, JPG,Png,Gif only allowed)</label>
+              <label>File: (PDF, Word, Text, JPG,Png,Gif only allowed)</label>
               <input
                 type="file"
                 name="pdf"
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
                 onChange={handleFileChange}
                 className="bg-gray-100 block w-full border border-gray-200 shadow-sm rounded-lg text-sm 
                 focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 

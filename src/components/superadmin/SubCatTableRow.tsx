@@ -17,6 +17,7 @@ type SubCat = {
     name: string;
     catid: number;
     cat: Cat;
+    subprods_count: number;
   };
 
 type Props = {
@@ -67,7 +68,7 @@ const SubCatTableRow: React.FC<Props> = (props) => {
           to={`/superadmin/prods/view/${subcat.catid}/${subcat.id}`}
           className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
         >
-          View Products
+          View Products ({subcat.subprods_count})
         </NavLink>
 
 
@@ -77,9 +78,6 @@ const SubCatTableRow: React.FC<Props> = (props) => {
         >
           Add Product
         </NavLink>
-
-
-
 
 
         {canDelete && (
