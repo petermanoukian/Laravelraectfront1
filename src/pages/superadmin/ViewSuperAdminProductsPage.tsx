@@ -155,7 +155,7 @@ useEffect(() => {
     
       // Also reset local state page
       //setCurrentPage(1);
-    }, [debouncedSearchTerm, selectedCategoryId , selectedSubcategoryId]);
+    }, [debouncedSearchTerm, searchParams, selectedCategoryId, selectedSubcategoryId, setSearchParams]);
     
     
     
@@ -262,7 +262,7 @@ useEffect(() => {
   
           
           await axiosInstance.delete('/superadmin/prods/deleteall', {
-            data: { subids: ids },
+            data: { prodids: ids },
             withCredentials: true,
             headers: {
               'Content-Type': 'application/json',
