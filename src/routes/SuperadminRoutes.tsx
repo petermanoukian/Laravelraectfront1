@@ -17,6 +17,13 @@ import EditSuperAdminSubCatPage from "@/pages/superadmin/EditSuperAdminSubCatPag
 import ViewSuperAdminProductsPage from "@/pages/superadmin/ViewSuperAdminProductsPage";
 import AddSuperAdminProductPage from "@/pages/superadmin/AddSuperAdminProductPage";
 import EditSuperAdminProductPage from "@/pages/superadmin/EditSuperAdminProductPage";
+import ViewSuperAdminTaggsPage from "@/pages/superadmin/ViewSuperAdminTaggsPage";
+import AddSuperAdminTaggPage from  "@/pages/superadmin/AddSuperAdminTaggPage";
+import EditSuperAdminTaggPage from  "@/pages/superadmin/EditSuperAdminTaggPage";
+import ViewSuperAdminTaggProdPage from "@/pages/superadmin/ViewSuperAdminTaggProdPage";
+import AddSuperAdminTaggProdPage from "@/pages/superadmin/AddSuperAdminTaggProdPage";
+import EditSuperAdminTaggProdPage from "@/pages/superadmin/EditSuperAdminTaggProdPage";
+
 
 const SuperadminRoutes = [
   <Route
@@ -60,7 +67,13 @@ const SuperadminRoutes = [
 
     <Route path="prod/edit/:id" element={<EditSuperAdminProductPage />} />
 
+    <Route path="taggs/view" element={<ViewSuperAdminTaggsPage />} />
+    <Route path="tagg/add" element={<AddSuperAdminTaggPage />} />
+    <Route path="tagg/edit/:taggid" element={<EditSuperAdminTaggPage />} />
 
+    <Route path="viewtaggprod/view/:prodid?/:taggid?" element={<ViewSuperAdminTaggProdPage />} />
+    <Route path="addtaggprod/:prodid?/:taggid?" element={<AddSuperAdminTaggProdPage />} />
+    <Route path="edittaggprod/:id" element={<EditSuperAdminTaggProdPage />} />
 
 
 

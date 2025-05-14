@@ -1,4 +1,4 @@
-// File: src/pages/superadmin/EditSuperAdminCatPage.tsx
+// File: src/pages/superadmin/EditSuperAdminTaggPage.tsx
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -7,14 +7,13 @@ import axiosInstance from '../../lib/axios';
 
 import { NavLink } from 'react-router-dom';
 
-const EditSuperAdminCatPage = () => {
-  const {user, isAuthenticated } = useAuth();
+const EditSuperAdminTaggPage = () => {
+  const { user, isAuthenticated } = useAuth();
 
   const navigate = useNavigate();
-  const { catid: catid1 } = useParams<{ catid: string }>();
-  const catid = catid1 ? parseInt(catid1, 10) : null;
+  const { taggid: taggid1 } = useParams<{ taggid: string }>();
+  const taggid = taggid1 ? parseInt(taggid1, 10) : null;
 
-  const publicserverpath = import.meta.env.VITE_API_PUBLIC_URL
   
   const [formData, setFormData] = useState({
     name: '',
@@ -31,13 +30,16 @@ const EditSuperAdminCatPage = () => {
   const [nameAvailable, setNameAvailable] = useState<boolean | null>(null);
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
 
-  const fetchCatData = useCallback(async () => {
+
+
+
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(`/superadmin/cat/edit/${catid}`, { withCredentials: true });
+      const response = await axiosInstance.get(`/superadmin/tagg/edit/${taggid}`, { withCredentials: true });
       console.log("response iss", response.data);
       // Destructure the response data
-      const { name } = response.data.catedit;
+      const { name } = response.data.rowedit;
       
       // Set formData state
       setFormData({
@@ -45,7 +47,11 @@ const EditSuperAdminCatPage = () => {
  
       });
 
+      
       setName(name);
+
+
+
       console.log("Line 108 formData after setFormData:", {
         name: name,
  
@@ -57,19 +63,18 @@ const EditSuperAdminCatPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [catid]); // Now memoized and depends on userId
+  }, [taggid]); // Now memoized and depends on userId
 
   useEffect(() => {
-    if (catid) {
+    if (taggid) {
 
-        fetchCatData();
+        fetchData();
     }
     else {
-        console.log("Id is null", catid);  
+        console.log("Id is null", taggid);  
     }
-  }, [catid, fetchCatData]); 
+  }, [taggid, fetchData]); 
 
-  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
   
@@ -82,8 +87,8 @@ const EditSuperAdminCatPage = () => {
           
           try {
             const res = await axiosInstance.post(
-              '/cats/check-name-edit',
-              { name,  id: catid  },  // Include the userId
+              '/taggs/check-name-edit',
+              { name,  id: taggid  },  // Include the userId
               { withCredentials: true }
             );
             
@@ -95,7 +100,6 @@ const EditSuperAdminCatPage = () => {
             setNameAvailable(null);  // Reset if error occurs
           }
         }, 500); 
-
     } 
   
     // Update formData with the new value for the corresponding field
@@ -107,6 +111,7 @@ const EditSuperAdminCatPage = () => {
     setButtonDisabled(false); 
     setErrors({}); // Clear errors when the user starts typing
   };
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     console.log("handleSubmit is running")
@@ -114,12 +119,19 @@ const EditSuperAdminCatPage = () => {
     setLoading(true);
     setErrors({});
     console.log("handleSubmit is running Line 221")
+
     console.log("formData before validation Line 230", formData);
+
     const newErrors: { [key: string]: string[] } = {};
+
+  
     // React validations
     if (!formData.name.trim()) newErrors.name = ['The users Name is required.'];
     else if (formData.name.length > 255) newErrors.name = ['Name must be under 255 characters.'];
 
+  
+
+    
     // If any frontend errors, stop here
     if (Object.keys(newErrors).length > 0) {
         console.log("Object.keys(newErrors).length > 0 is running")
@@ -130,25 +142,25 @@ const EditSuperAdminCatPage = () => {
     }
   
     // Proceed to submit
-    const catData = new FormData();
-    catData.append('name', formData.name);
+    const taggData = new FormData();
+    taggData.append('name', formData.name);
     console.log("formData name is", formData.name)
     
-    for (let [key, value] of catData.entries()) {
+    for (let [key, value] of taggData.entries()) {
         console.log(`${key}: ${value}`);
       }
 
-    console.log("data", catData)
-    catData.append('_method', 'PUT');
+    console.log("data", taggData)
+    taggData.append('_method', 'PUT');
     try {
-        console.log("Data is", catData)
-      await axiosInstance.post(`/superadmin/cat/update/${catid}`, catData, {
+        console.log("Data is", taggData)
+      await axiosInstance.post(`/superadmin/tagg/update/${taggid}`, taggData, {
         withCredentials: true,
         headers: {
-          'Content-Type': 'multipart/form-data', // Fix from your previous 'application/json'
+          'Content-Type': 'multipart/form-data', 
         },
       });
-      navigate('/superadmin/cats');
+      navigate('/superadmin/taggs/view');
     } catch (error: any) {
       if (error.response && error.response.status === 422) {
         setErrors(error.response.data.errors || {});
@@ -174,14 +186,16 @@ const EditSuperAdminCatPage = () => {
 
   return (
     <>
+
       <div className="p-8 rounded border border-gray-200 w-full max-w-3xl mx-auto">
-        <h2 className="font-medium text-3xl">Edit Category</h2>
+        <h2 className="font-medium text-3xl">Edit Tag</h2>
         <form onSubmit={handleSubmit}>
-          <div className="mt-8 grid lg:grid-cols-1 gap-4 w-full">
+          <div className="mt-3 grid lg:grid-cols-1 gap-4 w-full">
             {/* Name Input */}
             <div className="w-full">
               <label>Name:</label>
-              <input  required
+              <input
+                required
                 className="bg-gray-100 border border-gray-200 rounded py-1 px-3 block focus:ring-blue-500 focus:border-blue-500 text-gray-700 w-full"
                 type="text"
                 name="name"
@@ -196,7 +210,6 @@ const EditSuperAdminCatPage = () => {
               {nameAvailable === true && !errors.name && (
                 <p className="text-green-600 text-sm">Available.</p>
               )}
-
             </div>
 
             {/* Submit Button */}
@@ -213,5 +226,5 @@ const EditSuperAdminCatPage = () => {
       );
     };
     
-    export default EditSuperAdminCatPage;
+    export default EditSuperAdminTaggPage;
     

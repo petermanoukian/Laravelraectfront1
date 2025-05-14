@@ -23,15 +23,17 @@ const menuSections: MenuSection[] = [
       { label: 'Add category', to: '/superadmin/cats/add' },
       { label: 'View subcategories', to: '/superadmin/subcats/view?refreshsubs=fullrefresh' }, // <-- NEW
       { label: 'Add subcategory', to: '/superadmin/subcats/add' },
-      { label: 'View Poducts', to: '/superadmin/prods/view?refreshsubs=fullrefresh' }, // <-- NEW
+      { label: 'View Products', to: '/superadmin/prods/view?refreshprods=fullrefresh' }, // <-- NEW
       { label: 'Add Products', to: '/superadmin/prod/add' },
+
+
     ],
   },
   {
-    title: 'Reports', // New section
+    title: 'Product Tags', // New section
     items: [
-      { label: 'Sales Report', to: '/reports/sales' },
-      { label: 'User Activity', to: '/reports/activity' },
+      { label: 'View Tags', to: '/superadmin/taggs/view' },
+      { label: 'Add Tags', to: '/superadmin/tagg/add' },
     ],
   },
 

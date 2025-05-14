@@ -86,7 +86,7 @@ const ViewSuperAdminProductsPage = () => {
     useEffect(() => {
       if (categoryid) {
         setSelectedCategoryId(categoryid);
-        console.log('chnaged cat  ' + categoryid)
+        //console.log('changed cat  ' + categoryid)
       }
     }, [categoryid]);
 
@@ -94,7 +94,7 @@ const ViewSuperAdminProductsPage = () => {
       if (subcategoryid) {
         setSelectedSubcategoryId(subcategoryid);
       }
-      console.log('changed subcat  ' + subcategoryid)
+      //console.log('changed subcat  ' + subcategoryid)
     }, [subcategoryid]);
 
 
@@ -104,58 +104,54 @@ useEffect(() => {
     setSelectedSubcategoryId('');
   }
 }, [selectedCategoryId, categoryid]);  // This will run when either selectedCategoryId or categoryid changes
- // This will trigger whenever selectedCategoryId changes
-
+ 
 
   useEffect(() => {
     
-    console.log('chnage of subcategory');
+    //console.log('change of subcategory');
   }, [selectedSubcategoryId]);
 
     
 
-    const handleToggleSelect = (prodId: number) => {
-      setSelectedProds((prevSelected) =>
-        prevSelected.includes(prodId)
-          ? prevSelected.filter((id) => id !== prodId)
-          : [...prevSelected, prodId]
-      );
-    };
+  const handleToggleSelect = (prodId: number) => {
+    setSelectedProds((prevSelected) =>
+      prevSelected.includes(prodId)
+        ? prevSelected.filter((id) => id !== prodId)
+        : [...prevSelected, prodId]
+    );
+  };
 
 
-    const handleSelectAll = () => {
-      const selectableIds = prods
-        
-        .map((u) => u.id);
-    
-      const allSelected = selectableIds.every((id) => selectedProds.includes(id));
-    
-      if (allSelected) {
-        setSelectedProds([]);
-      } else {
-        setSelectedProds(selectableIds);
-      }
-    };
-    
+  const handleSelectAll = () => {
+    const selectableIds = prods     
+    .map((u) => u.id); 
+    const allSelected = selectableIds.every((id) => selectedProds.includes(id));
+    if (allSelected) {
+      setSelectedProds([]);
+    } else {
+      setSelectedProds(selectableIds);
+    }
+  };
+  
 
 
-    const pageParam = searchParams.get('page');
-    const currentPage = pageParam ? parseInt(pageParam, 10) : 1
+  const pageParam = searchParams.get('page');
+  const currentPage = pageParam ? parseInt(pageParam, 10) : 1
 
-    useEffect(() => {
-      const newParams = new URLSearchParams(searchParams);
-    
-      // Reset to page 1 ONLY if debouncedSearchTerm or selectedCategoryId changes
-      newParams.set('page', '1');
-    
-      // Only update searchParams if page is NOT already 1
-      if (searchParams.get('page') !== '1') {
-        setSearchParams(newParams);
-      }
-    
-      // Also reset local state page
-      //setCurrentPage(1);
-    }, [debouncedSearchTerm, searchParams, selectedCategoryId, selectedSubcategoryId, setSearchParams]);
+  useEffect(() => {
+    const newParams = new URLSearchParams(searchParams);
+  
+    // Reset to page 1 ONLY if debouncedSearchTerm or selectedCategoryId changes
+    newParams.set('page', '1');
+  
+    // Only update searchParams if page is NOT already 1
+    if (searchParams.get('page') !== '1') {
+      setSearchParams(newParams);
+    }
+  
+    // Also reset local state page
+    //setCurrentPage(1);
+  }, [debouncedSearchTerm, searchParams, selectedCategoryId, selectedSubcategoryId, setSearchParams]);
     
     
     
@@ -213,10 +209,10 @@ useEffect(() => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const refreshSubs = params.get('refreshsubs');
+    const refreshProds = params.get('refreshprods');
 
-    if (refreshSubs === 'fullrefresh') {
-      console.log('Full refresh of subcategories triggered...');
+    if (refreshProds === 'fullrefresh') {
+      console.log('Full refresh triggered...');
 
       // Reset search term and category selection
       setSearchTerm('');
@@ -304,15 +300,11 @@ useEffect(() => {
       )
     return (
     <>
-  
-     
       <div className="w-full p-3 bg-gray-100 mb-4">
         <p className = "mt-3 block text-sm">
-
         <NavLink to="/superadmin/cats" className="text-blue-500 hover:underline font-bold text-sm">
             &rsaquo; View categories 
         </NavLink>
-
         <NavLink
           to={`/superadmin/subcats/view${categoryid ? `/${categoryid}` : ''}`}
           className="ml-1 text-blue-500 hover:underline font-bold text-sm"
@@ -328,15 +320,11 @@ useEffect(() => {
           {subcategoryName ? ` | ${subcategoryName}` : ''}
         </NavLink>
 
-
-
-
         </p>
       </div>
 
-
       <div className="p-6">
-      <h2 className="text-xl font-bold mb-4">SubCategories</h2>
+      <h2 className="text-xl font-bold mb-4">Products</h2>
 
         <ProdFilterControls
         cats={cats}
@@ -348,8 +336,6 @@ useEffect(() => {
         selectedSubcategoryId={selectedSubcategoryId}
         setSelectedSubcategoryId={setSelectedSubcategoryId}
       />
-
-
 
       {selectedProds.length > 0 && (
         <>
@@ -369,16 +355,13 @@ useEffect(() => {
       <>
 
       <table className="min-w-full border">
-
         <ProdTableHeader
-
           sortField={sortField}
           sortDirection={sortDirection}
           setSortField={setSortField}
           setSortDirection={setSortDirection}
           allSelected={
             prods
-        
               .every((u) => selectedProds.includes(u.id))
           }
           onToggleSelectAll={handleSelectAll}
@@ -388,8 +371,6 @@ useEffect(() => {
         <tbody>
           {prods.map((prodx: Product) => (
             <ProdTableRow
-
-
               key={prodx.id}
               prod={prodx}
               currentUserRole={user?.role}

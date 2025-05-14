@@ -2,7 +2,7 @@
 // src/components/superadmin/CatTableRow.tsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 , Plus, PlusCircle, Eye} from 'lucide-react';
 
 type Role = {
   name: string;
@@ -101,11 +101,6 @@ const ProdTableRow: React.FC<Props> = (props) => {
           />
         )}
 
-
-
-      </td>
-
-    <td className="border px-3 py-2">
       {prod.pdf ? (
         <a
           href={`${baseUrl}${prod.pdf}`}
@@ -118,29 +113,64 @@ const ProdTableRow: React.FC<Props> = (props) => {
       ) : (
         <span>No File</span>
       )}
-    </td>
+
+      </td>
+
+
 
 
 
       <td className="border px-4 py-2 space-x-2">
-        <NavLink
-          to={`/superadmin/prod/edit/${prod.id}`}
-          className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-sm"
-        >
-         <Pencil className="w-4 h-6 inline" />
-        </NavLink>
+      
+
+        <div className="flex flex-col space-y-1">
+          {/* Action Buttons */}
+          <div className="flex space-x-2">
+            <NavLink
+              to={`/superadmin/prod/edit/${prod.id}`}
+              className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded text-sm"
+              title="Edit Product"
+            >
+              <Pencil className="w-4 h-4 inline" />
+            </NavLink>
+
+            {canDelete && (
+              <button
+                onClick={() => onDeleteConfirm(prod.id)}
+                className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                title="Delete Product"
+              >
+                <Trash2 className="w-4 h-4 inline" />
+              </button>
+            )}
+          </div>
+
+          {/* Tagg Actions */}
+          <div className="mt-0">
+            <div className="font-semibold text-sm text-gray-700 mb-1">Tags:</div>
+            <div className="flex space-x-2">
+              <NavLink
+                to={`/superadmin/addtaggprod/${prod.id}/0`}
+                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded"
+                title="Add Tagg to Product"
+              >
+                <PlusCircle className="w-4 h-4 inline" />
+              </NavLink>
+
+              <NavLink
+                to={`/superadmin/viewtaggprod/view/${prod.id}/0`}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                title="View Taggs for Product"
+              >
+                <Eye className="w-4 h-4 inline" />
+              </NavLink>
+            </div>
+          </div>
+        </div>
 
 
 
 
-        {canDelete && (
-          <button
-            onClick={() => onDeleteConfirm(prod.id)}
-            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
-          >
-             <Trash2 className="w-4 h-4 inline" />
-          </button>
-        )}
       </td>
     </tr>
   );

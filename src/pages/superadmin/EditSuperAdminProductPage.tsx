@@ -81,8 +81,6 @@ const EditSuperAdminProductPage = () => {
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
   const [firstSubLoad, setFirstSubLoad] = useState(false);
 
-
-
   const fetchProdData = useCallback(async () => {
     setLoading(true);
     try {
@@ -144,8 +142,6 @@ const EditSuperAdminProductPage = () => {
         console.log("Id is null", id);  
     }
   }, [id, fetchProdData]); 
-
-
 
   const handleChange = (
     e:
@@ -222,10 +218,7 @@ const EditSuperAdminProductPage = () => {
       setErrors({});
     }
   };
-  
 
-  
-  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

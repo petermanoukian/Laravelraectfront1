@@ -1,7 +1,5 @@
-// src/components/superadmin/SubCatTableHeader.tsx
+// src/components/superadmin/CatTableHeader.tsx
 import React from 'react';
-import {  ListOrdered } from "lucide-react";
-
 
 type Props = {
 
@@ -13,7 +11,7 @@ type Props = {
   onToggleSelectAll?: () => void;
 };
 
-const ProdTableHeader: React.FC<Props> = ({
+const TaggTableHeader: React.FC<Props> = ({
     sortField,
     sortDirection,
     setSortField,
@@ -54,29 +52,22 @@ const ProdTableHeader: React.FC<Props> = ({
             />
           </th>
   
-          {['id', 'order', 'name', 'category','subcategory'].map((field) => (
+          {['id', 'name'].map((field) => (
           <th
           key={field}
-          className="border px-3 py-2 text-left cursor-pointer select-none"
+          className="border px-4 py-2 text-left cursor-pointer select-none"
           onClick={() => handleSort(field)}
         >
-<div className="flex items-center gap-1">
-      <span>
-        {field === 'order' ? (
-          <ListOrdered className="w-4 h-4" title="Order" />
-        ) : (
-          field.charAt(0).toUpperCase() + field.slice(1)
-        )}
-      </span>
-      {renderArrows(field)}
-    </div>
+          <div className="flex items-center gap-1">
+            <span>{field.charAt(0).toUpperCase() + field.slice(1)}</span>
+            {renderArrows(field)}
+          </div>
         </th>
           ))}
-          <th className="border px-3 py-2 text-left">Image</th>
-          <th className="border px-3 py-2 text-left">Actions</th>
+          <th className="border px-4 py-2 text-left">Actions</th>
         </tr>
       </thead>
     );
   };
 
-export default ProdTableHeader;
+export default TaggTableHeader;
