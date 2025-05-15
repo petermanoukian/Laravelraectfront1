@@ -11,29 +11,35 @@ import Select from 'react-select';
 import { Editor } from '@tinymce/tinymce-react';
 
 
-type Cat = {
-  id: number;
-  name: string;
-  subcats_count: number;
-  catprods_count: number;
-}; 
+  type Cat = 
+  {
+    id: number;
+    name: string;
+    subcats_count: number;
+    catprods_count: number;
+  }; 
 
-type Subcat = {
-  id: number;
-  catid: number;
-  name: string;
-  subprods_count: number;
-};
+  type Subcat = {
+    id: number;
+    catid: number;
+    name: string;
+    subprods_count: number;
+  };
 
-
+  type Tagg = 
+  {
+    id: number;
+    name: string;
+  }; 
 
   const AddSuperAdminProductPage = () => {
   const debounceRef = useRef<number | null>(null);
-  const { categoryid: categoryid1, subcategoryid: subcategoryid1 } = useParams();
+  const {categoryid: categoryid1, subcategoryid: subcategoryid1 } = useParams();
   const [categoryid, setCategoryid] = useState<string>(categoryid1 || '');
   const [subcategoryid, setSubcategoryid] = useState<string>(subcategoryid1 || '');
   const [categoryName, setCategoryName] = useState<string>('');
   const [subcategoryName, setSubcategoryName] = useState<string>('');
+
   const [des, setDes] = useState('');
   const [dess, setDess] = useState(''); 
   const [prix, setPrix] = useState(1); 
@@ -74,6 +80,7 @@ type Subcat = {
     dess: string;
     img: File | null;
     pdf: File | null;
+    taggids: number[];
   }>({
     name: '',
     catid: categoryid || '',
@@ -86,6 +93,7 @@ type Subcat = {
     dess: '',
     img: null,
     pdf: null,
+    taggids: [],
   });
 
   useEffect(() => {
@@ -113,7 +121,8 @@ type Subcat = {
   const { currentUser } = useAuth();
   const [img, setImg] = useState<File | null>(null);
   const [pdf, setPdf] = useState<File | null>(null);
-
+  const [taggs, setTaggs] = useState<Tagg[]>([]);
+  const [taggids, setTaggids] = useState<number[]>([]);
 
 
   const handleChange = (
@@ -179,6 +188,7 @@ type Subcat = {
 
         setCategoryid(value);
         setSubcategoryid(value);
+        
 
         setFormData((prev) => ({
           ...prev,
@@ -192,10 +202,22 @@ type Subcat = {
       }
     };
 
+    const handleTaggidsChange = (selectedOptions: any) => {
+      const tagids = selectedOptions ? selectedOptions.map((opt: any) => opt.value) : [];
 
-  useEffect(() => {
+      setTaggids(tagids);
+
+      setFormData((prev) => ({
+        ...prev,
+        taggids: tagids,
+      }));
+    };
+
+
+
+    useEffect(() => {
     
-    const fetchSubs = async () => {
+    const fetchAddData = async () => {
 
     let url = '/superadmin/prod/add';
 
@@ -216,19 +238,20 @@ type Subcat = {
         //console.log('Fetched subcats:', response.data.subs);
         setCats(response.data.cats);  
         setSubCats(response.data.subs);
+        setTaggs(response.data.taggs);  
         //setCategoryid(response.data.catid || ''); // Set default category
         //setSubcategoryid(response.data.subid || ''); // Set default subcategory
         setCategoryName(response.data.category_name || ''); // Set default category name
         setSubcategoryName(response.data.subcategory_name || ''); // Set default subcategory name
-        console.log('Fetched category name:', response.data.category_name);
-        console.log('Fetched subcategory name:', response.data.subcategory_name);
+        //console.log('Fetched category name:', response.data.category_name);
+        //console.log('Fetched subcategory name:', response.data.subcategory_name);
         
       } catch (error) {
         console.error('Error fetching :', error);
       }
     };
   
-    fetchSubs();
+    fetchAddData();
   }, [ categoryid , subcategoryid]);
 
 
@@ -290,6 +313,9 @@ type Subcat = {
     prodData.append('name', formData.name);
     prodData.append('catid', formData.catid);
     prodData.append('subid', formData.subid);
+    formData.taggids.forEach((id) => {
+      prodData.append('taggids[]', id.toString());
+    });
     prodData.append('vis', formData.vis);
     prodData.append('quan', formData.quan.toString());
     prodData.append('prix', formData.prix.toString());
@@ -445,9 +471,20 @@ type Subcat = {
   ? subcategoryOptions.find((option) => option.value === subcategoryid) || null
   : null;
 
+  const taggOptions: OptionType[] = [
+    { value: '', label: 'Tags' }, // Add this line
+    ...(
+      Array.isArray(taggs)
+        ? taggs.map((tagg) => ({
+            value: String(tagg.id),
+            label: `${tagg.name}`, 
+          }))
+        : []
+    ),
+  ];
 
 
-const checkNameAvailability = (name: string, catid: string, subid: string) => {
+  const checkNameAvailability = (name: string, catid: string, subid: string) => {
   if (debounceRef.current) clearTimeout(debounceRef.current);
 
   debounceRef.current = window.setTimeout(async () => {
@@ -594,6 +631,20 @@ const checkNameAvailability = (name: string, catid: string, subid: string) => {
             )}
 
             {errors.name && <p className="text-red-500 text-sm">{errors.name[0]}</p>}
+          </div>
+
+           <div className="w-full">
+              <label>Tags:</label>
+
+              <Select
+                options={taggOptions}
+                isMulti
+               onChange={handleTaggidsChange}
+                placeholder="Tags."
+                isSearchable={true}
+                className="w-[99%]"
+                classNamePrefix="react-select"
+              />
           </div>
 
 

@@ -20,6 +20,11 @@ type Sub = {
   name: string;
 };
 
+  type Tagg = 
+  {
+    id: number;
+    name: string;
+  }; 
 
 const EditSuperAdminProductPage = () => {
 
@@ -32,30 +37,32 @@ const EditSuperAdminProductPage = () => {
   const publicserverpath = import.meta.env.VITE_API_PUBLIC_URL
   
   const [formData, setFormData] = useState<{
-    name: string;
-    catid: string | number;
-    subid: string | number;
-    quan: number;
-    ordd: number;
-    vis: string;
-    prix: number;
-    des: string;
-    dess: string;
-    img: File | null;
-    pdf: File | null;
-  }>({
-    name: '',
-    catid:  '',
-    subid:  '',
-    quan: 1,
-    ordd: 1,
-    vis: '1',   
-    prix: 1,
-    des: '',
-    dess: '',
-    img: null,
-    pdf: null,
-  });
+  name: string;
+  catid: string | number;
+  subid: string | number;
+  quan: number;
+  ordd: number;
+  vis: string;
+  prix: number;
+  des: string;
+  dess: string;
+  img: File | null;
+  pdf: File | null;
+  taggids: string[]; // FIXED: string[]
+}>({
+  name: '',
+  catid: '',
+  subid: '',
+  quan: 1,
+  ordd: 1,
+  vis: '1',
+  prix: 1,
+  des: '',
+  dess: '',
+  img: null,
+  pdf: null,
+  taggids: [], // empty to start
+});
 
   const [name, setName] = useState<string>('');
   const [cats, setCats] = useState<Cat[]>([]);
@@ -70,6 +77,10 @@ const EditSuperAdminProductPage = () => {
   const [vis, setVis] = useState('1');  
   const [quan, setQuan] = useState(1);  
   const [ordd, setOrdd] = useState(1);
+  const [taggs, setTaggs] = useState<Tagg[]>([]);
+  const [taggids, setTaggids] = useState<string[]>([]); 
+
+
   const [imgPreview, setImgPreview] = useState<string | null>(null);
   const [prodAvailable, setProdAvailable] = useState<boolean | null>(null);
 
@@ -100,8 +111,9 @@ const EditSuperAdminProductPage = () => {
         prix: prix,
         des: des,
         dess: dess,
-        img: null, // Handle file preview separately
-        pdf: null, // Same here
+        img: null, 
+        pdf: null, 
+        taggids: response.data.taggids.map((id: number) => String(id)),
       });
 
       
@@ -117,7 +129,9 @@ const EditSuperAdminProductPage = () => {
       setPdf(pdf);
       setVis(vis);
       setCats(response.data.cats);
-      setSubs(response.data.subs)
+      setSubs(response.data.subs);
+      setTaggs(response.data.taggs);
+      setTaggids(response.data.taggids.map((id: number) => String(id)));
       setImgPreview(img ? `${publicserverpath}${img}` : null);
 
       console.log("Line 108 formData after setFormData:", {
@@ -219,6 +233,15 @@ const EditSuperAdminProductPage = () => {
     }
   };
 
+  const handleTaggidsChange = (selectedOptions: any) => {
+    const tagids = selectedOptions ? selectedOptions.map((opt: any) => String(opt.value)) : [];
+
+    setTaggids(tagids);
+    setFormData((prev) => ({
+      ...prev,
+      taggids: tagids,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -286,6 +309,9 @@ const EditSuperAdminProductPage = () => {
     prodData.append('ordd', formData.ordd.toString());
     if (formData.img) prodData.append('img', formData.img);
     if (formData.pdf) prodData.append('pdf', formData.pdf);
+    formData.taggids.forEach((id) => {
+      prodData.append('taggids[]', id); // already string
+    });
     console.log('Form data:', prodData);
     console.log('Form data:', formData);
     prodData.append('_method', 'PUT');
@@ -491,32 +517,39 @@ const EditSuperAdminProductPage = () => {
     ),
   ];
 
-const selectedSubcategoryOption = subcategoryOptions.find(
-  (option) => Number(option.value) === subid
-) ;
+  const selectedSubcategoryOption = subcategoryOptions.find(
+    (option) => Number(option.value) === subid
+  ) ;
 
-const checkNameAvailability = (id: string, name: string, catid: string, subid: string) => {
-  if (debounceRef.current) clearTimeout(debounceRef.current);
 
-  debounceRef.current = window.setTimeout(async () => {
-    if (!name || !catid || !subid) return;
+const taggOptions = taggs.map((tagg) => ({
+  value: String(tagg.id), // MUST BE STRING
+  label: tagg.name,
+}));
 
-    try {
-      const res = await axiosInstance.post(
-        '/prods/check-name-edit',
-        { id, name, catid, subid },
-        { withCredentials: true }
-      );
 
-      const available = !res.data.exists;
-      setProdAvailable(available);
-      setButtonDisabled(!available);
-    } catch (err) {
-      console.error('check failed:', err);
-      setProdAvailable(null);
-    }
-  }, 500);
-};
+  const checkNameAvailability = (id: string, name: string, catid: string, subid: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = window.setTimeout(async () => {
+      if (!name || !catid || !subid) return;
+
+      try {
+        const res = await axiosInstance.post(
+          '/prods/check-name-edit',
+          { id, name, catid, subid },
+          { withCredentials: true }
+        );
+
+        const available = !res.data.exists;
+        setProdAvailable(available);
+        setButtonDisabled(!available);
+      } catch (err) {
+        console.error('check failed:', err);
+        setProdAvailable(null);
+      }
+    }, 500);
+  };
 
 
 
@@ -639,6 +672,21 @@ const checkNameAvailability = (id: string, name: string, catid: string, subid: s
             )}
 
             {errors.name && <p className="text-red-500 text-sm">{errors.name[0]}</p>}
+          </div>
+
+          <div className="w-full">
+              <label>Tags:</label>
+
+ <Select
+  options={taggOptions}
+  isMulti
+  value={taggOptions.filter((opt) => formData.taggids.includes(opt.value))} // comparing string to string ✅
+  onChange={handleTaggidsChange}
+  placeholder="Tags"
+  isSearchable
+  className="w-[99%]"
+  classNamePrefix="react-select"
+/>
           </div>
 
 
