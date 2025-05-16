@@ -18,31 +18,38 @@ type Cat = {
     subprods_count: number;
   };
 
-type Props = {
- 
-  cats: Cat[];
-  subcats: Subcat[];
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
-  selectedCategoryId: string;
-  setSelectedCategoryId: (id: string) => void;
-  selectedSubcategoryId: string;
-  setSelectedSubcategoryId: (id: string) => void;
+  type Tagg = {
+    id: number;
+    name: string;
+  };
 
+  type Props = {
+    alltags: Tagg[];
+    cats: Cat[];
+    subcats: Subcat[];
+    searchTerm: string;
+    setSearchTerm: (term: string) => void;
+    selectedCategoryId: string;
+    setSelectedCategoryId: (id: string) => void;
+    selectedSubcategoryId: string;
+    setSelectedSubcategoryId: (id: string) => void;
+    taggids: number[];
+    handleTaggidsChange: (selectedOptions: { value: number; label: string }[]) => void;
+  };
 
-};
-
-const ProdFilterControls: React.FC<Props> = ({
-  cats = [],
-  subcats = [],
-  searchTerm,
-  setSearchTerm,
-  selectedCategoryId,
-  setSelectedCategoryId,
-  selectedSubcategoryId,
-  setSelectedSubcategoryId,
-
-}) => {
+  const ProdFilterControls: React.FC<Props> = ({
+    cats = [],
+    subcats = [],
+    alltags = [], 
+    searchTerm,
+    setSearchTerm,
+    selectedCategoryId,
+    setSelectedCategoryId,
+    selectedSubcategoryId,
+    setSelectedSubcategoryId,
+    taggids,
+    handleTaggidsChange,
+  }) => {
 
 
 
@@ -66,6 +73,15 @@ const ProdFilterControls: React.FC<Props> = ({
     })),
   ];
 
+  const tagOptions = [
+    { value: '', label: 'All Tags' },
+    ...alltags.map((tag) => ({
+      value: tag.id,
+      label: tag.name,
+    })),
+  ];
+  console.log('tagOptions inside filtercontrols:', tagOptions);
+
 
   return (
     <>
@@ -79,7 +95,7 @@ const ProdFilterControls: React.FC<Props> = ({
             />
 
 
-         <Select
+            <Select
                 options={categoryOptions}
                 onChange={(selectedOption) =>
                     setSelectedCategoryId(selectedOption?.value || '')
@@ -91,9 +107,9 @@ const ProdFilterControls: React.FC<Props> = ({
                 isSearchable={true}
                 className="w-85"
                 classNamePrefix="react-select"
-                />
+              />
 
-                <Select
+              <Select
                 options={subcategoryOptions}
                 onChange={(selectedOption) =>
                     setSelectedSubcategoryId(selectedOption?.value || '')
@@ -105,7 +121,18 @@ const ProdFilterControls: React.FC<Props> = ({
                 isSearchable={true}
                 className="w-75"
                 classNamePrefix="react-select"
-                />
+              />
+
+            <Select
+              options={tagOptions}
+              isMulti={true}
+              onChange={handleTaggidsChange}
+              value={tagOptions.filter((opt) => taggids.includes(opt.value))}
+              placeholder="Select tags..."
+              isSearchable={true}
+              className="w-[98%]"
+              classNamePrefix="react-select"
+            />
 
 
        </div>

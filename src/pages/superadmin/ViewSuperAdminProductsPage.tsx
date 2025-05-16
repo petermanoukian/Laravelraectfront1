@@ -28,6 +28,12 @@ type Subcat = {
   subprods_count: number;
 };
 
+
+type Tagg = {
+  id: number;
+  name: string;
+};
+
 type Product = {
   id: number;            // Product ID
   name: string;          // Product name
@@ -43,6 +49,8 @@ type Product = {
   ordd: number;          // Order number (number)
   cat: Cat; 
   subcat: Subcat;        // Subcategory object
+  taggids: number[];    // Array of tag IDs
+  prodtaggs: Tagg[];        // Array of tag 
 };
 
 
@@ -51,6 +59,8 @@ const ViewSuperAdminProductsPage = () => {
     const baseUrl = import.meta.env.VITE_API_PUBLIC_URL;
     const [cats, setCats] = useState<Cat[]>([]);
     const [subcats, setSubCats] = useState<Subcat[]>([]);
+    const [alltaggs, setAllTaggs] = useState<Tagg[]>([]);
+    const [taggids, setTaggids] = useState<number[]>([]);
     const [prods, setProds] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const { user, setUser, isAuthenticated } = useAuth();
@@ -98,16 +108,15 @@ const ViewSuperAdminProductsPage = () => {
     }, [subcategoryid]);
 
 
-useEffect(() => {
-  // Reset the subcategory when the selected category changes and doesn't match the initial categoryid
-  if (selectedCategoryId !== categoryid) {
-    setSelectedSubcategoryId('');
-  }
-}, [selectedCategoryId, categoryid]);  // This will run when either selectedCategoryId or categoryid changes
+  useEffect(() => {
+
+    if (selectedCategoryId !== categoryid) {
+      setSelectedSubcategoryId('');
+    }
+  }, [selectedCategoryId, categoryid]);  
  
 
   useEffect(() => {
-    
     //console.log('change of subcategory');
   }, [selectedSubcategoryId]);
 
@@ -138,20 +147,23 @@ useEffect(() => {
   const pageParam = searchParams.get('page');
   const currentPage = pageParam ? parseInt(pageParam, 10) : 1
 
-  useEffect(() => {
-    const newParams = new URLSearchParams(searchParams);
-  
-    // Reset to page 1 ONLY if debouncedSearchTerm or selectedCategoryId changes
-    newParams.set('page', '1');
-  
-    // Only update searchParams if page is NOT already 1
+useEffect(() => {
+  const newParams = new URLSearchParams(searchParams);
+  let shouldUpdate = false;
+
+  // Reset to page 1 if any of these filters changed
+  if (debouncedSearchTerm || selectedCategoryId || selectedSubcategoryId || taggids.length > 0) {
     if (searchParams.get('page') !== '1') {
-      setSearchParams(newParams);
+      newParams.set('page', '1');
+      shouldUpdate = true;
     }
-  
-    // Also reset local state page
-    //setCurrentPage(1);
-  }, [debouncedSearchTerm, searchParams, selectedCategoryId, selectedSubcategoryId, setSearchParams]);
+  }
+
+  if (shouldUpdate) {
+    setSearchParams(newParams);
+  }
+}, [debouncedSearchTerm, selectedCategoryId, selectedSubcategoryId, taggids]);
+
     
     
     
@@ -160,7 +172,7 @@ useEffect(() => {
     const fetchProds = async () => {
       try {
 
-          let url = '/superadmin/prods/view';
+        let url = '/superadmin/prods/view';
 
         if (selectedCategoryId) {
           url += `/${selectedCategoryId}`;
@@ -168,6 +180,13 @@ useEffect(() => {
         if (selectedSubcategoryId) {
           url += `/${selectedSubcategoryId}`;
         }
+
+        //here needed to add the taggids
+        /*
+        if (taggids.length > 0) {
+          url += `/${taggids.join(',')}`;
+        }
+          */
         console.log('url is ' + url);
         const response = await axiosInstance.get(url, {
           params: {
@@ -176,14 +195,17 @@ useEffect(() => {
             search: debouncedSearchTerm,
             sortField,
             sortDirection,
+            taggids: taggids.length > 0 ? taggids.join(',') : '',
           },
         });
         //console.log(response.data);
         setSubCats(response.data.subcats);
         setCats(response.data.cats);
+        setAllTaggs(response.data.alltaggs);
+        console.log('alltaggs:', response.data.alltaggs);
         setProds(response.data.prods.data);
-        console.log('subcats only :', response.data.subcats);
-        console.log('cats only :', response.data.cats);
+        //console.log('subcats only :', response.data.subcats);
+        //console.log('cats only :', response.data.cats);
         setTotalPages(response.data.prods.last_page);
         setCategoryName(response.data?.category_name ?? null);
         setSubcategoryName(response.data?.subcategory_name ?? null);
@@ -202,6 +224,7 @@ useEffect(() => {
     debouncedSearchTerm,
     sortField,
     sortDirection,
+    taggids,
   ]);
   
   
@@ -287,6 +310,10 @@ useEffect(() => {
       setDeleteConfirmation({ show: false, prodIds: [] });
     };
 
+    const handleTaggidsChange = (selectedOptions: { value: number; label: string }[]) => {
+      const ids = selectedOptions.map((opt) => opt.value);
+      setTaggids(ids);
+    };
 
     
 
@@ -300,7 +327,11 @@ useEffect(() => {
       )
     return (
     <>
+
+{alltaggs.length > 0 && <div>First tag: {alltaggs[0].name}</div>}
+     
       <div className="w-full p-3 bg-gray-100 mb-4">
+        
         <p className = "mt-3 block text-sm">
         <NavLink to="/superadmin/cats" className="text-blue-500 hover:underline font-bold text-sm">
             &rsaquo; View categories 
@@ -328,6 +359,7 @@ useEffect(() => {
 
         <ProdFilterControls
         cats={cats}
+        alltags={alltaggs}
         subcats={subcats}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
@@ -335,6 +367,8 @@ useEffect(() => {
         setSelectedCategoryId={setSelectedCategoryId}
         selectedSubcategoryId={selectedSubcategoryId}
         setSelectedSubcategoryId={setSelectedSubcategoryId}
+        taggids={taggids}
+        handleTaggidsChange={handleTaggidsChange}
       />
 
       {selectedProds.length > 0 && (

@@ -146,6 +146,30 @@ const ProdTableRow: React.FC<Props> = (props) => {
           </div>
 
           {/* Tagg Actions */}
+
+
+       <div className="flex flex-wrap gap-2 text-sm text-gray-800 mb-2">
+        
+            {prod.taggs && prod.taggs.length > 0 ? (
+              prod.taggs.map((tagg: any) => (
+                <div key={tagg.id}>
+                  &rsaquo;{' '}
+                  <NavLink
+                    to={`/superadmin/tagg/edit/${tagg.id}`}
+                    className="text-blue-600 hover:underline"
+                    title={`Edit Tagg: ${tagg.name}`}
+                  >
+                    {tagg.name}
+                  </NavLink>
+                </div>
+              ))
+            ) : (
+              <div className="text-gray-500 italic">No tags assigned</div>
+            )}
+          </div>
+
+
+
           <div className="mt-0">
             <div className="font-semibold text-sm text-gray-700 mb-1">Tags:</div>
             <div className="flex space-x-2">
