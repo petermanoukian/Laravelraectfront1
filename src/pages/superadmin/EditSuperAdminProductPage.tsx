@@ -497,7 +497,7 @@ const EditSuperAdminProductPage = () => {
   ];
 
   const selectedCategoryOption = categoryOptions.find(
-    (option) => Number(option.value) === catid
+    (option) => Number(option.value) === Number(catid)
   );
 
 
@@ -518,7 +518,7 @@ const EditSuperAdminProductPage = () => {
   ];
 
   const selectedSubcategoryOption = subcategoryOptions.find(
-    (option) => Number(option.value) === subid
+    (option) => Number(option.value) === Number(subid)
   ) ;
 
 
