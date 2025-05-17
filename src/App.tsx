@@ -3,7 +3,7 @@
 import './index.css'
 import './axiosSetup';
 import AppRoutes from "./routes/AppRoutes";
-import { AuthProvider } from './contexts/AuthContext';
+//import { AuthProvider } from './contexts/AuthContext';
 
 
  function App() {

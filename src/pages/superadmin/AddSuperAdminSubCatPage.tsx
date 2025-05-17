@@ -1,16 +1,21 @@
 // AddSuperAdminSubCatPage.tsx
 
 import React, { useEffect, useRef, useState} from 'react';
-import { useNavigate , useSearchParams , useParams } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate ,  useParams } from 'react-router-dom';
+//import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../lib/axios';
 import { NavLink } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
+//import { useLocation } from 'react-router-dom';
 import Select from 'react-select';
 
 type Cat = {
   id: number;
   name: string;
+};
+
+type OptionType = {
+  value: string;
+  label: string;
 };
 
 const AddSuperAdminSubCatPage = () => {
@@ -38,7 +43,7 @@ const AddSuperAdminSubCatPage = () => {
   const navigate = useNavigate();
 
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
-  const { user, setUser, isAuthenticated } = useAuth();
+  //const { user, setUser, isAuthenticated } = useAuth();
 
 
 
@@ -50,7 +55,7 @@ const AddSuperAdminSubCatPage = () => {
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({}); 
   const [loading, setLoading] = useState(false);
   
-  const { currentUser } = useAuth();
+  //const { currentUser } = useAuth();
 
   /*
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -136,7 +141,7 @@ const AddSuperAdminSubCatPage = () => {
     };
   
     fetchCats();
-  }, [ ]);
+  }, [categoryid]);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -170,13 +175,23 @@ const AddSuperAdminSubCatPage = () => {
         },
       });
       navigate('/superadmin/subcats/view');
-    } catch (error: any) {
-      if (error.response && error.response.status === 422) {
-        setErrors(error.response.data.errors || {});
+    } 
+    catch (error: unknown) {
+      // Check if the error is an object and has a 'response' property
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        // Assert the type to safely access response properties
+        const axiosError = error as { response?: { status?: number; data?: any } };
+        if (axiosError.response && axiosError.response.status === 422) {
+          setErrors(axiosError.response.data.errors || {});
+        } else {
+          console.error('Failed to create user:', error);
+        }
       } else {
+        // Handle other types of errors
         console.error('Failed to create user:', error);
       }
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };

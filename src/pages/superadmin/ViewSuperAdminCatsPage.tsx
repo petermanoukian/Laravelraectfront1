@@ -1,9 +1,10 @@
 //ViewSuperAdminCatsPage.tsx
-import React from 'react'
-import { useNavigate , useSearchParams  } from 'react-router-dom';
+//import React from 'react'
+//import { useNavigate , useSearchParams  } from 'react-router-dom';
+import {  useSearchParams  } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../lib/axios';
-import { Link , NavLink} from 'react-router-dom';
+import { NavLink} from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import CatTableHeader from '../../components/superadmin/CatTableHeader';
 import CatTableRow from '../../components/superadmin/CatTableRow';
@@ -22,7 +23,7 @@ const ViewSuperAdminCatsPage = () => {
 
   const [cats, setCats] = useState<Cat[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user, setUser, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
 
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean; catIds: number[] }>({
@@ -75,13 +76,13 @@ const ViewSuperAdminCatsPage = () => {
     if (!isNaN(parsedPage) && parsedPage !== currentPage) {
       setCurrentPage(parsedPage);
     }
-  }, [searchParams]); // make sure currentPage is in deps
+  }, [searchParams , currentPage]); // make sure currentPage is in deps
   
 
   useEffect(() => {
     setCurrentPage(1);
     setSearchParams({ page: '1' });
-  }, [ debouncedSearchTerm]);
+  }, [debouncedSearchTerm, setSearchParams]);
   
 
 

@@ -1,9 +1,10 @@
 //Approutes.tsx
-import { Routes, Route } from "react-router-dom";
+//import { Routes, Route } from "react-router-dom";
+import { Routes } from "react-router-dom";
 import PublicRoutes from './PublicRoutes';
 
 import SuperadminRoutes from './SuperadminRoutes';
-import ProtectedRouteSuper from "@/components/ProtectedRouteSuper";
+//import ProtectedRouteSuper from "@/components/ProtectedRouteSuper";
 
 
 

@@ -32,6 +32,12 @@ import { Editor } from '@tinymce/tinymce-react';
     name: string;
   }; 
 
+  type OptionType = {
+  value: string;
+  label: string;
+  isDisabled: boolean;
+  };
+
   const AddSuperAdminProductPage = () => {
   const debounceRef = useRef<number | null>(null);
   const {categoryid: categoryid1, subcategoryid: subcategoryid1 } = useParams();
@@ -41,7 +47,7 @@ import { Editor } from '@tinymce/tinymce-react';
   const [subcategoryName, setSubcategoryName] = useState<string>('');
 
   const [des, setDes] = useState('');
-  const [dess, setDess] = useState(''); 
+  const [, setDess] = useState(''); 
   const [prix, setPrix] = useState(1); 
   const [vis, setVis] = useState('1');  
   const [quan, setQuan] = useState(1);  
@@ -111,18 +117,18 @@ import { Editor } from '@tinymce/tinymce-react';
   const navigate = useNavigate();
 
   const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
-  const { user, setUser, isAuthenticated } = useAuth();
-  const [name, setName] = useState<string>('');
+  //const { user, setUser, isAuthenticated } = useAuth();
+  const [,setName] = useState<string>('');
   const [cats, setCats] = useState<Cat[]>([]);
   const [subcats, setSubCats] = useState<Subcat[]>([]);
   const [prodAvailable, setProdAvailable] = useState<boolean | null>(null);
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({}); 
   const [loading, setLoading] = useState(false);
-  const { currentUser } = useAuth();
-  const [img, setImg] = useState<File | null>(null);
-  const [pdf, setPdf] = useState<File | null>(null);
+  //const { currentUser } = useAuth();
+  const [, setImg] = useState<File | null>(null);
+  const [, setPdf] = useState<File | null>(null);
   const [taggs, setTaggs] = useState<Tagg[]>([]);
-  const [taggids, setTaggids] = useState<number[]>([]);
+  const [, setTaggids] = useState<number[]>([]);
 
 
   const handleChange = (
@@ -397,7 +403,7 @@ import { Editor } from '@tinymce/tinymce-react';
       pdf: file, 
     }); 
 
-    const url = URL.createObjectURL(file);
+    URL.createObjectURL(file);
     const type = file.type;
 
     if (
@@ -435,19 +441,17 @@ import { Editor } from '@tinymce/tinymce-react';
 
 
   const categoryOptions: OptionType[] = [
-    { value: '', label: 'All Categories' }, // Add this line
+    { value: '', label: 'All Categories', isDisabled: false }, // Add this line
     ...(
       Array.isArray(cats)
         ? cats.map((cat) => ({
             value: String(cat.id),
-           
             label: `${cat.name}-(${cat.subcats_count}Subcategories-${cat.catprods_count} Items)`,
-            subcats_count: cat.subcats_count,
-            catprods_count: cat.catprods_count,
+            isDisabled: false,
           }))
         : []
     ),
-  ];
+  ]; 
 
   const selectedCategoryOption = categoryid
   ? categoryOptions.find((option) => option.value === categoryid) || null
@@ -455,11 +459,12 @@ import { Editor } from '@tinymce/tinymce-react';
 
 
   const subcategoryOptions: OptionType[] = [
-    { value: '', label: 'All SubCategories' }, // Add this line
+    { value: '', label: 'All SubCategories' , isDisabled: true}, // Add this line
     ...(
       Array.isArray(subcats)
         ? subcats.map((sub) => ({
             value: String(sub.id),
+             isDisabled: false ,
             label: `${sub.name}-(${sub.subprods_count} Items)`, 
             subprods_count: sub.subprods_count, 
           }))
@@ -477,7 +482,8 @@ import { Editor } from '@tinymce/tinymce-react';
       Array.isArray(taggs)
         ? taggs.map((tagg) => ({
             value: String(tagg.id),
-            label: `${tagg.name}`, 
+            label: `${tagg.name}`,
+            isDisabled: false, 
           }))
         : []
     ),

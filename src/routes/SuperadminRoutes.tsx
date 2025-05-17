@@ -1,10 +1,10 @@
 // SuperadminRoutes.tsx
 import { Route } from "react-router-dom";
-import { Outlet } from "react-router-dom";
+//import { Outlet } from "react-router-dom";
 import SuperadminPage from "@/pages/superadmin";
 import ProtectedRouteSuper from "@/components/ProtectedRouteSuper";
 import SuperadminLayoutWrapper from "@/layouts/SuperadminLayoutWrapper";
-import DashboardSuperAdminLayout from "@/layouts/DashboardSuperAdminLayout";
+//import DashboardSuperAdminLayout from "@/layouts/DashboardSuperAdminLayout";
 import ViewSuperAdminUsersPage from "@/pages/superadmin/ViewSuperAdminUsersPage";
 import AddSuperAdminUserPage from "@/pages/superadmin/AddSuperAdminUserPage";
 import EditSuperAdminUserPage from "@/pages/superadmin/EditSuperAdminUserPage";

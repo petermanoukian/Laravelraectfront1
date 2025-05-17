@@ -74,10 +74,11 @@ type Cat = {
   ];
 
   const tagOptions = [
-    { value: '', label: 'All Tags' },
+    { value: '', label: 'All Tags' , isDisabled: true },
     ...alltags.map((tag) => ({
       value: tag.id,
       label: tag.name,
+      isDisabled: false,
     })),
   ];
   console.log('tagOptions inside filtercontrols:', tagOptions);

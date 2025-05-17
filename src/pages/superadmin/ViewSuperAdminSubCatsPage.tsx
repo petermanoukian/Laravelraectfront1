@@ -1,10 +1,10 @@
 //ViewSuperAdminSubCatsPage.tsx
 
-import React from 'react'
+//import React from 'react'
 import { useNavigate , useSearchParams , useParams  } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../lib/axios';
-import { Link , NavLink} from 'react-router-dom';
+import { NavLink} from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import SubCatTableHeader from '../../components/superadmin/SubCatTableHeader';  
 import SubCatTableRow from '../../components/superadmin/SubCatTableRow';
@@ -33,7 +33,7 @@ const ViewSuperAdminSubCatsPage = () => {
     const [cats, setCats] = useState<Cat[]>([]);
     const [subcats, setSubCats] = useState<Subcat[]>([]);
     const [loading, setLoading] = useState(true);
-    const { user, setUser, isAuthenticated } = useAuth();
+    const { user } = useAuth();
     const location = useLocation();
     const [categoryName, setCategoryName] = useState<string | null>(null);
     const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean; subcatIds: number[] }>({
@@ -46,7 +46,7 @@ const ViewSuperAdminSubCatsPage = () => {
     const perPage = 10;
     const [refreshKey, setRefreshKey] = useState(0);
     const [selectedSubCats, setSelectedSubCats] = useState<number[]>([]);
-    const currentUserRole = user?.role;
+    //const currentUserRole = user?.role;
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [sortField, setSortField] = useState('id');
@@ -115,8 +115,7 @@ const ViewSuperAdminSubCatsPage = () => {
         setSearchParams(newParams);
       }
     
-      // Also reset local state page
-      //setCurrentPage(1);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [debouncedSearchTerm, selectedCategoryId]);
     
     

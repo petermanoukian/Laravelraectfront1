@@ -12,7 +12,7 @@ const AddSuperAdminTaggPage = () => {
 const debounceRef = useRef<number | null>(null);
 
 const [buttonDisabled, setButtonDisabled] = useState<boolean>(false);
-const { user, setUser, isAuthenticated } = useAuth();
+//const { user, setUser, isAuthenticated } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -26,7 +26,7 @@ const { user, setUser, isAuthenticated } = useAuth();
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({}); 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  //const { currentUser } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
